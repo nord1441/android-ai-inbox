@@ -37,4 +37,13 @@
     <string name="detail_event_low_confidence">⚠ 自動抽出の信頼度が低めです（要確認）</string>
     <string name="detail_event_starts_at">開始: %1$s</string>
     <string name="detail_event_location">場所: %1$s</string>
+    <string name="settings_model_status">モデル状態</string>
+    <string name="settings_model_redownload">再ダウンロード</string>
+    <string name="settings_db_size">データベース使用量</string>
+    <string name="settings_version">バージョン</string>
+    <string name="settings_model_variant">バリアント: %1$s</string>
+    <string name="settings_model_size">ファイルサイズ: %1$d MB</string>
+    <string name="settings_db_size_value">%1$d KB</string>
+    <string name="settings_variant_none">未DL</string>
+    <string name="settings_back">戻る</string>
 </resources>

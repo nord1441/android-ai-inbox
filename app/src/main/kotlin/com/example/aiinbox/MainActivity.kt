@@ -15,6 +15,7 @@ import com.example.aiinbox.ui.detail.DetailViewModel
 import com.example.aiinbox.ui.inbox.InboxScreen
 import com.example.aiinbox.ui.modeldownload.ModelDownloadScreen
 import com.example.aiinbox.ui.navigation.Routes
+import com.example.aiinbox.ui.settings.SettingsScreen
 import com.example.aiinbox.ui.theme.AiInboxTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -61,7 +62,7 @@ class MainActivity : ComponentActivity() {
                     composable(Routes.INBOX) {
                         InboxScreen(
                             onItemClick = { id -> nav.navigate(Routes.detail(id)) },
-                            onSettingsClick = { /* TODO Task 8: nav.navigate(Routes.SETTINGS) */ },
+                            onSettingsClick = { nav.navigate(Routes.SETTINGS) },
                         )
                     }
                     composable(
@@ -69,6 +70,9 @@ class MainActivity : ComponentActivity() {
                         arguments = listOf(navArgument(DetailViewModel.NAV_ARG_ID) { type = NavType.StringType }),
                     ) {
                         DetailScreen(onBack = { nav.popBackStack() })
+                    }
+                    composable(Routes.SETTINGS) {
+                        SettingsScreen(onBack = { nav.popBackStack() })
                     }
                 }
             }
