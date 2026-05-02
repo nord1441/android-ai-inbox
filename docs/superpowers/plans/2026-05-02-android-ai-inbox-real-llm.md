@@ -317,18 +317,19 @@ class ModelManager @Inject constructor(
     }
 
     fun expectedSizeBytes(variant: ModelVariant): Long = when (variant) {
-        ModelVariant.GEMMA_4_E2B -> 1_300_000_000L
-        ModelVariant.GEMMA_4_E4B -> 2_500_000_000L
+        // 実測値（2026-05時点、Hugging Face Content-Length より）
+        ModelVariant.GEMMA_4_E2B -> 2_003_697_664L  // ≈1.87 GB
+        ModelVariant.GEMMA_4_E4B -> 2_964_324_352L  // ≈2.76 GB
         ModelVariant.FAKE -> 0L
     }
 
     fun downloadUrl(variant: ModelVariant): String = when (variant) {
-        // TODO: 実DL URLは2026年5月時点で確認・変更すること（Hugging Face / Google CDN）
-        // 環境変数やBuildConfigで上書きできるようにしておくと便利
+        // MediaPipe LLM Inference 用の .task ファイルは litert-community 配下に配布されている。
+        // google/gemma-4-* リポは .safetensors のみで MediaPipe には使えない。
         ModelVariant.GEMMA_4_E2B ->
-            "https://huggingface.co/google/gemma-4-e2b-it/resolve/main/gemma-4-e2b-it-q4_k_m.task"
+            "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-web.task"
         ModelVariant.GEMMA_4_E4B ->
-            "https://huggingface.co/google/gemma-4-e4b-it/resolve/main/gemma-4-e4b-it-q4_k_m.task"
+            "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it-web.task"
         ModelVariant.FAKE -> error("FAKE variant has no URL")
     }
 
