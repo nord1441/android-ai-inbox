@@ -6,12 +6,14 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.example.aiinbox.data.repository.InboxRepository
 import com.example.aiinbox.llm.ContentHintDetector
-import com.example.aiinbox.llm.LlmEngine
+import com.example.aiinbox.llm.LlmServiceClient
+import com.example.aiinbox.llm.ModelManager
 import com.example.aiinbox.notification.NotificationHelper
 
 class TestSummarizeWorkerFactory(
     private val repo: InboxRepository,
-    private val engine: LlmEngine,
+    private val client: LlmServiceClient,
+    private val modelManager: ModelManager,
     private val hintDetector: ContentHintDetector,
     private val notifier: NotificationHelper,
 ) : WorkerFactory() {
@@ -19,11 +21,9 @@ class TestSummarizeWorkerFactory(
         appContext: Context,
         workerClassName: String,
         workerParameters: WorkerParameters,
-    ): ListenableWorker? {
-        return when (workerClassName) {
-            SummarizeWorker::class.java.name ->
-                SummarizeWorker(appContext, workerParameters, repo, engine, hintDetector, notifier)
-            else -> null
-        }
+    ): ListenableWorker? = when (workerClassName) {
+        SummarizeWorker::class.java.name ->
+            SummarizeWorker(appContext, workerParameters, repo, client, modelManager, hintDetector, notifier)
+        else -> null
     }
 }

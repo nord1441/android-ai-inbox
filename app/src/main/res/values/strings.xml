@@ -6,4 +6,9 @@
     <string name="notification_summary_complete_title">要約が完了しました</string>
     <string name="notification_channel_summary_complete">要約完了通知</string>
     <string name="notification_channel_event_detected">イベント検出通知</string>
+    <string name="notification_channel_llm_service">LLM処理</string>
+    <string name="notification_llm_service_running">要約処理中…</string>
+    <string name="notification_llm_service_idle">モデル待機中</string>
+    <string name="notification_channel_download">モデルダウンロード</string>
+    <string name="dl_notif_title">モデルをダウンロード中…</string>
 </resources>
