@@ -13,9 +13,13 @@ object RamDetector {
         return info.totalMem
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun selectVariant(totalRamBytes: Long): ModelVariant {
-        val gigabytes = totalRamBytes / (1024.0 * 1024 * 1024)
-        return if (gigabytes >= 8.0) ModelVariant.GEMMA_4_E4B else ModelVariant.GEMMA_4_E2B
+        // Until the bigger Gemma 3 4B / Gemma 4 path lands (LiteRT-LM API),
+        // we only ship Gemma 3 1B which is small enough for any minSdk 33
+        // device with ≥6 GB RAM. RAM-based selection becomes meaningful again
+        // once a 4B+ option is added.
+        return ModelVariant.GEMMA_3_1B
     }
 
     fun selectVariantForDevice(context: Context): ModelVariant =

@@ -18,7 +18,7 @@ class MediaPipeLlmEngineTest {
 
     private val ctx = ApplicationProvider.getApplicationContext<Context>()
     private lateinit var engine: MediaPipeLlmEngine
-    private val variant = ModelVariant.GEMMA_4_E2B
+    private val variant = ModelVariant.GEMMA_3_1B
 
     @Before
     fun setup() {

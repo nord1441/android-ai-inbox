@@ -63,8 +63,8 @@ class SummarizeWorkerTest {
         val client = LlmServiceClient(ctx)
         val modelManager = ModelManager(ctx)
         // Ensure no model is present — currentVariant() should return null.
-        modelManager.deleteModel(com.example.aiinbox.llm.ModelVariant.GEMMA_4_E2B)
-        modelManager.deleteModel(com.example.aiinbox.llm.ModelVariant.GEMMA_4_E4B)
+        modelManager.deleteModel(com.example.aiinbox.llm.ModelVariant.GEMMA_3_1B)
+        modelManager.deleteModel(com.example.aiinbox.llm.ModelVariant.GEMMA_3_1B)
 
         val worker = TestListenableWorkerBuilder<SummarizeWorker>(ctx)
             .setInputData(Data.Builder().putString(SummarizeWorker.KEY_ITEM_ID, id).build())
