@@ -20,16 +20,19 @@ class ShareReceiverActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        android.util.Log.i(TAG, "onCreate. action=${intent.action}")
         val text = intent.getStringExtra(Intent.EXTRA_TEXT)
         val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
         val sourceApp = referrer?.host
 
         if (text.isNullOrBlank()) {
+            android.util.Log.w(TAG, "EXTRA_TEXT empty — aborting")
             Toast.makeText(this, "テキストが見つかりません", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
 
+        android.util.Log.i(TAG, "Got text len=${text.length} subject=$subject sourceApp=$sourceApp")
         Toast.makeText(this, getString(R.string.toast_saved), Toast.LENGTH_SHORT).show()
 
         // Theme.NoDisplay requires synchronous finish() before onResume completes.
@@ -37,9 +40,21 @@ class ShareReceiverActivity : ComponentActivity() {
         // outlive this Activity's lifecycle.
         val app = application as AiInboxApplication
         app.applicationScope.launch {
-            val id = repository.createPendingItem(text, subject, sourceApp)
-            workScheduler.enqueueSummarize(id)
+            try {
+                android.util.Log.i(TAG, "applicationScope.launch entered")
+                val id = repository.createPendingItem(text, subject, sourceApp)
+                android.util.Log.i(TAG, "createPendingItem returned id=$id")
+                workScheduler.enqueueSummarize(id)
+                android.util.Log.i(TAG, "enqueueSummarize($id) returned")
+            } catch (t: Throwable) {
+                android.util.Log.e(TAG, "applicationScope coroutine threw", t)
+            }
         }
+        android.util.Log.i(TAG, "onCreate done — calling finish()")
         finish()
+    }
+
+    companion object {
+        private const val TAG = "ShareReceiverActivity"
     }
 }
