@@ -67,11 +67,15 @@ fun DetailScreen(
         }
     }
 
-    // Surface error to snackbar
-    LaunchedEffect(state.errorMessage) {
-        state.errorMessage?.let {
-            snackbar.showSnackbar(it)
-            viewModel.clearError()
+    // Surface error to snackbar — but not while the delete-undo snackbar is
+    // showing, since enqueuing here would replace it (Dismissed fires
+    // immediately and would prematurely call onBack).
+    LaunchedEffect(state.errorMessage, state.deleted) {
+        if (!state.deleted) {
+            state.errorMessage?.let {
+                snackbar.showSnackbar(it)
+                viewModel.clearError()
+            }
         }
     }
 
