@@ -66,6 +66,12 @@ interface InboxDao {
     @RawQuery(observedEntities = [InboxItem::class])
     fun observeSearchRaw(query: SupportSQLiteQuery): Flow<List<InboxItem>>
 
+    /**
+     * FTS5 (trigram) full-text search joined with inbox_items. Queries shorter than
+     * 3 characters return no rows (trigram limitation) — callers should route those
+     * to [observeSearchLike] instead. Caller is responsible for FTS5-safe quoting
+     * of the input (e.g. wrapping in double-quotes after stripping `"`).
+     */
     fun observeSearch(query: String, hasEventOnly: Int): Flow<List<InboxItem>> =
         observeSearchRaw(
             SimpleSQLiteQuery(

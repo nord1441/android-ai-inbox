@@ -12,6 +12,10 @@ object FtsCallback : RoomDatabase.Callback() {
     }
 
     private fun createFtsTable(db: SupportSQLiteDatabase) {
+        // NOTE: tokenize='trigram' enables CJK substring search for queries >= 3 chars.
+        // Switching tokenizer post-release on existing installs requires a wipe + rebuild
+        // (DROP VIRTUAL TABLE inbox_fts; recreate; reinsert from inbox_items) — schema version
+        // bump alone won't propagate the change because IF NOT EXISTS short-circuits.
         db.execSQL(
             """
             CREATE VIRTUAL TABLE IF NOT EXISTS inbox_fts USING fts5(
