@@ -39,3 +39,6 @@ out/
 # OS
 .DS_Store
 Thumbs.db
+
+# Roomスキーマはコミット対象（マイグレーションテストに必要）
+!app/schemas/
