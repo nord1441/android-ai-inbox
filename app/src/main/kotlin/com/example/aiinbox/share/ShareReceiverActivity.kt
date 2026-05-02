@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.lifecycle.lifecycleScope
+import com.example.aiinbox.AiInboxApplication
 import com.example.aiinbox.R
 import com.example.aiinbox.data.repository.InboxRepository
 import com.example.aiinbox.work.WorkScheduler
@@ -31,10 +31,15 @@ class ShareReceiverActivity : ComponentActivity() {
         }
 
         Toast.makeText(this, getString(R.string.toast_saved), Toast.LENGTH_SHORT).show()
-        lifecycleScope.launch {
+
+        // Theme.NoDisplay requires synchronous finish() before onResume completes.
+        // Persist + enqueue happen in the Application-scoped coroutine so they
+        // outlive this Activity's lifecycle.
+        val app = application as AiInboxApplication
+        app.applicationScope.launch {
             val id = repository.createPendingItem(text, subject, sourceApp)
             workScheduler.enqueueSummarize(id)
-            finish()
         }
+        finish()
     }
 }
