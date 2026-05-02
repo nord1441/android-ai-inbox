@@ -54,14 +54,19 @@ class ModelDownloadWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         val variantName = inputData.getString(KEY_VARIANT) ?: return Result.failure()
         val variant = ModelVariant.valueOf(variantName)
+        android.util.Log.i(TAG, "doWork start. variant=$variant attempt=$runAttemptCount url=${modelManager.downloadUrl(variant)}")
 
         return try {
+            android.util.Log.i(TAG, "calling setForeground…")
             setForeground(getForegroundInfo())
+            android.util.Log.i(TAG, "setForeground returned. starting downloadWithResume…")
             withContext(Dispatchers.IO) {
                 downloadWithResume(variant)
             }
+            android.util.Log.i(TAG, "downloadWithResume done. Result.success.")
             Result.success(Data.Builder().putString(KEY_VARIANT, variant.name).build())
         } catch (t: Throwable) {
+            android.util.Log.e(TAG, "doWork threw (attempt=$runAttemptCount)", t)
             if (runAttemptCount < MAX_RETRIES) Result.retry()
             else Result.failure(Data.Builder().putString(KEY_ERROR, t.message ?: "unknown").build())
         }
@@ -72,13 +77,16 @@ class ModelDownloadWorker @AssistedInject constructor(
         target.parentFile?.mkdirs()
         val tmp = File(target.parentFile, target.name + ".part")
         val existing = if (tmp.exists()) tmp.length() else 0L
+        android.util.Log.i(TAG, "target=${target.absolutePath} existing=$existing")
 
         val request = Request.Builder()
             .url(modelManager.downloadUrl(variant))
             .apply { if (existing > 0) header("Range", "bytes=$existing-") }
             .build()
 
+        android.util.Log.i(TAG, "executing HTTP GET ${request.url}")
         httpClient.newCall(request).execute().use { response ->
+            android.util.Log.i(TAG, "HTTP response code=${response.code} contentLength=${response.header("Content-Length")}")
             check(response.isSuccessful) { "HTTP ${response.code}" }
             val body = response.body ?: error("empty body")
             val totalKnown = response.header("Content-Length")?.toLongOrNull()?.let { it + existing }
@@ -115,6 +123,7 @@ class ModelDownloadWorker @AssistedInject constructor(
     }
 
     companion object {
+        private const val TAG = "ModelDownloadWorker"
         const val KEY_VARIANT = "variant"
         const val KEY_DOWNLOADED = "downloaded"
         const val KEY_TOTAL = "total"
