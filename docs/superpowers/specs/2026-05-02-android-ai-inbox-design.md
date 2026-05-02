@@ -16,7 +16,7 @@ Androidの **Share Intent (`ACTION_SEND` / `text/plain`)** で受け取ったテ
 - **モデル**: Gemma 4 E4B (Q4_K_M, ~2.5GB) を 8GB+ RAM 端末では既定。6〜7GB RAM 端末では Gemma 4 E2B (Q4_K_M, ~1.3GB) にフォールバック
 - **LLMランタイム**: MediaPipe LLM Inference API (`com.google.mediapipe:tasks-genai`)
   - ML Kit GenAI Prompt API はAICore対応端末に限定されるため、互換性重視でMediaPipeを採用
-- **配布**: Google Play 配布前提（個人利用向けではない）
+- **配布**: 公開配布想定（特定端末向けの個人最適化はしない、Play Store想定だが配布チャネルはMVP段階で確定不要）
 
 ## 3. ユーザー体験の柱
 
@@ -29,8 +29,8 @@ Androidの **Share Intent (`ACTION_SEND` / `text/plain`)** で受け取ったテ
 
 ### 3.2 通知
 
-- **通常完了**: サイレント通知（`Importance: LOW`）。チャンネル `summary_complete`
-- **イベント検出時**: 通常Importance通知。「📅 カレンダーに追加」アクションボタン付き。チャンネル `event_detected`
+- **通常完了**: サイレント通知（`IMPORTANCE_LOW`）。チャンネル `summary_complete`
+- **イベント検出時**: `IMPORTANCE_DEFAULT` 通知。「📅 カレンダーに追加」アクションボタン付き。チャンネル `event_detected`
 - **複数件バースト**: `groupKey` で束ねる
 - 通知タップで該当アイテムの詳細画面を開く
 
@@ -226,6 +226,8 @@ LLMには以下の **JSON Schema** を出力させる：
 
 - パース失敗時は1回だけ再プロンプト（フォーマット違反例示）
 - 再失敗時は `summary` のみ非構造化テキストとして保存、他フィールドは `null`
+- **時刻表現の正規化**: LLMはタイムゾーン未指定の場合、端末ローカルTZを基準に `start_iso` / `end_iso` を出力するよう指示。アプリ側で `LocalDateTime` → 端末TZ → unix millis に変換し、DBの `startMillis` / `endMillis` に保存
+- **時刻不明時**: LLMは `start_iso` を `YYYY-MM-DD` のみで出力可（時刻なし＝終日扱い）。アプリ側で「日付のみ」を判定し、`startMillis = 当日0:00`、`endMillis = null` で終日イベントとして保存
 
 ## 6. データフロー
 
