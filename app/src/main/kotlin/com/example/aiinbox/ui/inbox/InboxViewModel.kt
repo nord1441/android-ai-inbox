@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -21,22 +22,30 @@ class InboxViewModel @Inject constructor(
 
     private val filterState = MutableStateFlow(InboxFilter())
 
-    private val itemsFlow = filterState
-        .flatMapLatest { filter -> repository.observeFiltered(filter) }
+    // Pair items with the filter that produced them so combine never emits
+    // (oldItems, newFilter): when filterState changes, this inner flow
+    // re-subscribes and `items` and `filter` always travel together.
+    private val itemsWithFilterFlow = filterState
+        .flatMapLatest { filter ->
+            repository.observeFiltered(filter).map { items -> items to filter }
+        }
 
     private val allItemsFlow = repository.observeAll()
 
     val uiState: StateFlow<InboxUiState> = combine(
-        itemsFlow,
+        itemsWithFilterFlow,
         allItemsFlow,
-        filterState,
-    ) { items, allItems, filter ->
+    ) { (items, filter), allItems ->
         InboxUiState(
             items = items,
             loading = false,
             filter = filter,
-            availableCategories = allItems.mapNotNull { it.category }.toSet(),
-            availableTags = allItems.flatMap { it.tags }.toSet(),
+            availableCategories = allItems.mapNotNull { it.category }
+                .filter { it.isNotBlank() }
+                .toSet(),
+            availableTags = allItems.flatMap { it.tags }
+                .filter { it.isNotBlank() }
+                .toSet(),
         )
     }.stateIn(
         scope = viewModelScope,

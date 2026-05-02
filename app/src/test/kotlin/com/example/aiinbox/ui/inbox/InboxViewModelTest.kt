@@ -99,6 +99,31 @@ class InboxViewModelTest {
         }
     }
 
+    @Test
+    fun `availableCategories and availableTags derived from observeAll`() = runTest {
+        val flow = MutableStateFlow<List<InboxItem>>(emptyList())
+        val repo: InboxRepository = mockk()
+        every { repo.observeFiltered(any()) } returns flow
+        every { repo.observeAll() } returns flow
+
+        val vm = InboxViewModel(repo)
+        vm.uiState.test {
+            skipItems(1)
+            flow.value = listOf(
+                sampleItem("1").copy(category = "work", tags = listOf("urgent", "")),
+                sampleItem("2").copy(category = "personal", tags = listOf("urgent", "home")),
+                sampleItem("3").copy(category = null, tags = emptyList()),
+            )
+            var s = awaitItem()
+            while (s.availableCategories.isEmpty()) {
+                s = awaitItem()
+            }
+            assertThat(s.availableCategories).containsExactly("work", "personal")
+            assertThat(s.availableTags).containsExactly("urgent", "home")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     private fun sampleItem(id: String) = InboxItem(
         id = id, originalText = "x",
         originalSubject = null, sourceApp = null,
