@@ -8,15 +8,23 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 object SqlCipherFactory {
 
+    @Volatile private var loaded = false
+
     /**
-     * No-op on sqlcipher-android 4.x: the native library is loaded automatically
-     * via a static initializer in [net.zetetic.database.sqlcipher.SupportOpenHelperFactory].
-     * Kept as a named function so call-sites remain readable and any future migration
-     * back to an explicit load only needs one change.
+     * Loads the SQLCipher native library. sqlcipher-android 4.x does NOT
+     * auto-load via static initializer reliably — calls into [SQLiteConnection]
+     * crash with UnsatisfiedLinkError if this isn't called before opening the
+     * database. Idempotent (System.loadLibrary is no-op after first success).
      */
     @Suppress("UNUSED_PARAMETER")
     fun loadLibs(context: Context) {
-        // sqlcipher-android 4.x self-initialises – no explicit System.loadLibrary call needed.
+        if (loaded) return
+        synchronized(this) {
+            if (!loaded) {
+                System.loadLibrary("sqlcipher")
+                loaded = true
+            }
+        }
     }
 
     fun create(passphraseProvider: KeystorePassphraseProvider): SupportSQLiteOpenHelper.Factory {
