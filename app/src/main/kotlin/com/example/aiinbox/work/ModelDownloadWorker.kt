@@ -29,6 +29,11 @@ class ModelDownloadWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
+        // Defensive: AiInboxApplication.onCreate already creates channels, but this
+        // ensures the channel exists even if the Worker runs before Application init
+        // (rare but possible in some restart scenarios). createNotificationChannel
+        // is idempotent.
+        NotificationChannels.ensureCreated(applicationContext)
         val notif = androidx.core.app.NotificationCompat.Builder(
             applicationContext,
             NotificationChannels.CHANNEL_DOWNLOAD,
