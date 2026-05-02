@@ -18,10 +18,12 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -133,7 +135,12 @@ private fun FilterChipsRow(state: InboxUiState, vm: InboxViewModel) {
 
 @Composable
 private fun InboxItemCard(item: InboxItem, onClick: () -> Unit) {
-    Card(modifier = Modifier.clickable { onClick() }) {
+    val cardColors = if (item.status == ItemStatus.FAILED) {
+        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+    } else {
+        CardDefaults.cardColors()
+    }
+    Card(modifier = Modifier.clickable { onClick() }, colors = cardColors) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(
                 text = item.title ?: item.originalText.take(40),
