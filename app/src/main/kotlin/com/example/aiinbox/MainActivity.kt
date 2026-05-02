@@ -28,11 +28,24 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val openItemId = intent.getStringExtra(NotificationHelper.EXTRA_OPEN_ITEM_ID)
 
+        // Diagnostic: show what ModelManager is actually checking and finding.
+        com.example.aiinbox.llm.ModelVariant.entries
+            .filter { it != com.example.aiinbox.llm.ModelVariant.FAKE }
+            .forEach { v ->
+                val f = modelManager.modelFilePath(v)
+                android.util.Log.i(
+                    "MainActivity",
+                    "Variant=$v path=${f.absolutePath} exists=${f.exists()} length=${if (f.exists()) f.length() else -1}",
+                )
+            }
+        val current = modelManager.currentVariant()
+        android.util.Log.i("MainActivity", "currentVariant=$current openItemId=$openItemId")
+
         setContent {
             AiInboxTheme {
                 val nav = rememberNavController()
                 val initialRoute = when {
-                    modelManager.currentVariant() == null -> Routes.MODEL_DOWNLOAD
+                    current == null -> Routes.MODEL_DOWNLOAD
                     openItemId != null -> Routes.detail(openItemId)
                     else -> Routes.INBOX
                 }

@@ -54,7 +54,13 @@ class ModelDownloadWorkerTest {
 
         val worker = TestListenableWorkerBuilder<ModelDownloadWorker>(ctx)
             .setInputData(Data.Builder().putString(ModelDownloadWorker.KEY_VARIANT, "GEMMA_4_E2B").build())
-            .setWorkerFactory(TestModelDownloadWorkerFactory(modelManager, httpClient))
+            .setWorkerFactory(
+                TestModelDownloadWorkerFactory(
+                    modelManager,
+                    httpClient,
+                    com.example.aiinbox.data.crypto.HfTokenStore(ctx),
+                )
+            )
             .build()
 
         val result = worker.doWork()

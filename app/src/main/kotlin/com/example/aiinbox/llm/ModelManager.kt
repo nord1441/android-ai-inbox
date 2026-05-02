@@ -12,7 +12,11 @@ open class ModelManager @Inject constructor(
 ) {
 
     fun modelFilePath(variant: ModelVariant): File {
-        val dir = File(context.noBackupFilesDir, "models").apply { mkdirs() }
+        // Use filesDir instead of noBackupFilesDir because some devices
+        // restrict write access to no_backup/ subdirs via run-as. allowBackup
+        // is already false at the manifest level so backup is excluded
+        // anyway.
+        val dir = File(context.filesDir, "models").apply { mkdirs() }
         return File(dir, modelFileName(variant))
     }
 
@@ -32,23 +36,32 @@ open class ModelManager @Inject constructor(
     }
 
     fun expectedSizeBytes(variant: ModelVariant): Long = when (variant) {
-        ModelVariant.GEMMA_4_E2B -> 1_300_000_000L
-        ModelVariant.GEMMA_4_E4B -> 2_500_000_000L
+        // Sizes from HF Content-Length on the .litertlm files.
+        ModelVariant.GEMMA_4_E2B -> 2_583_085_056L  // ≈2.40 GB
+        ModelVariant.GEMMA_4_E4B -> 3_654_467_584L  // ≈3.40 GB
         ModelVariant.FAKE -> 0L
     }
 
     open fun downloadUrl(variant: ModelVariant): String = when (variant) {
-        // TODO: 実DL URLは2026年5月時点で確認・変更すること（Hugging Face / Google CDN）
+        // litert-community publishes Gemma 4 in `.litertlm` format for use with
+        // the LiteRT-LM Android API. The HF repo is gated under the Gemma
+        // license; users must accept the license once at huggingface.co before
+        // these URLs become downloadable. App-side download currently 401s
+        // until an HF-token-aware ModelDownloadWorker lands. Workaround: pull
+        // the file in a browser, then `adb push` it to the device's
+        // files/models/<localName>.
         ModelVariant.GEMMA_4_E2B ->
-            "https://huggingface.co/google/gemma-4-e2b-it/resolve/main/gemma-4-e2b-it-q4_k_m.task"
+            "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/" +
+                "gemma-4-E2B-it.litertlm"
         ModelVariant.GEMMA_4_E4B ->
-            "https://huggingface.co/google/gemma-4-e4b-it/resolve/main/gemma-4-e4b-it-q4_k_m.task"
+            "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/" +
+                "gemma-4-E4B-it.litertlm"
         ModelVariant.FAKE -> error("FAKE variant has no URL")
     }
 
     private fun modelFileName(variant: ModelVariant): String = when (variant) {
-        ModelVariant.GEMMA_4_E2B -> "gemma-4-e2b-q4km.task"
-        ModelVariant.GEMMA_4_E4B -> "gemma-4-e4b-q4km.task"
-        ModelVariant.FAKE -> "fake.task"
+        ModelVariant.GEMMA_4_E2B -> "gemma-4-e2b.litertlm"
+        ModelVariant.GEMMA_4_E4B -> "gemma-4-e4b.litertlm"
+        ModelVariant.FAKE -> "fake.litertlm"
     }
 }

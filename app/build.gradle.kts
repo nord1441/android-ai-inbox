@@ -42,6 +42,11 @@ android {
         // Downgrade Kotlin metadata version so Hilt's KAPT-based component aggregation
         // (hiltJavaCompileDebug) can read class metadata produced by the Kotlin 2.x compiler.
         freeCompilerArgs += "-Xmetadata-version=1.9.0"
+        // LiteRT-LM 0.10.x ships with Kotlin metadata version 2.3.0 but our compiler
+        // is 2.1.0. The library API surface we use (Engine / EngineConfig / etc.) does
+        // not depend on Kotlin 2.3-specific features, so skipping the version check is
+        // safe for now.
+        freeCompilerArgs += "-Xskip-metadata-version-check"
     }
 
     buildFeatures { compose = true; buildConfig = true }
@@ -97,7 +102,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
 
-    implementation(libs.mediapipe.tasks.genai)
+    implementation(libs.litertlm.android)
     implementation(libs.okhttp)
     testImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(libs.okhttp.mockwebserver)

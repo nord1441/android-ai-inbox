@@ -17,10 +17,10 @@ class ModelManagerTest {
     }
 
     @Test
-    fun `model file path is under no-backup files dir`() {
+    fun `model file path is under files dir`() {
         val path = manager.modelFilePath(ModelVariant.GEMMA_4_E2B)
-        assertThat(path.absolutePath).contains(ctx.noBackupFilesDir.absolutePath)
-        assertThat(path.name).endsWith(".task")
+        assertThat(path.absolutePath).contains(ctx.filesDir.absolutePath)
+        assertThat(path.name).endsWith(".litertlm")
     }
 
     @Test
@@ -35,9 +35,9 @@ class ModelManagerTest {
 
     @Test
     fun `currentVariant returns variant whose file exists`() {
-        val path = manager.modelFilePath(ModelVariant.GEMMA_4_E4B)
+        val path = manager.modelFilePath(ModelVariant.GEMMA_4_E2B)
         path.parentFile?.mkdirs()
         path.writeBytes(ByteArray(16))
-        assertThat(manager.currentVariant()).isEqualTo(ModelVariant.GEMMA_4_E4B)
+        assertThat(manager.currentVariant()).isEqualTo(ModelVariant.GEMMA_4_E2B)
     }
 }
