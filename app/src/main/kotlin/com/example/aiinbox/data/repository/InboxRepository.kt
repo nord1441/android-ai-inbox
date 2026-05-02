@@ -25,9 +25,11 @@ class InboxRepository @Inject constructor(
      */
     fun observeFiltered(filter: InboxFilter): Flow<List<InboxItem>> {
         val hasEventInt = if (filter.hasEventOnly) 1 else 0
-        val q = filter.query
+        val q = filter.query.trim()
         val baseFlow = when {
-            q.isBlank() -> dao.observeFiltered(hasEventInt)
+            q.isEmpty() -> dao.observeFiltered(hasEventInt)
+            // 1-2 char queries fall through trigram FTS; LIKE wildcards `%`/`_`
+            // typed by the user pass through literally (Plan 3 trade-off).
             q.length < 3 -> dao.observeSearchLike("%$q%", hasEventInt)
             else -> dao.observeSearch("\"${q.replace("\"", "")}\"", hasEventInt)
         }
