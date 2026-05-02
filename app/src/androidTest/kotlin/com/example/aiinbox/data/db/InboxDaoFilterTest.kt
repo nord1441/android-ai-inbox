@@ -58,9 +58,24 @@ class InboxDaoFilterTest {
     fun `observeSearch with hasEvent filter`() = runBlocking {
         dao.insert(item("a", hasEvent = false).copy(summary = "東京の話"))
         dao.insert(item("b", hasEvent = true).copy(summary = "東京の打ち合わせ"))
-        dao.observeSearch("東京", hasEventOnly = 1).test {
+        // trigram tokenizer requires queries >= 3 chars; 東京の matches both rows
+        // so only the hasEventOnly filter narrows the result to "b".
+        dao.observeSearch("東京の", hasEventOnly = 1).test {
             assertThat(awaitItem().map { it.id }).containsExactly("b")
             cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `observeSearchLike matches short CJK substring with hasEvent filter`() {
+        runBlocking {
+            dao.insert(item("a", hasEvent = false).copy(summary = "東京の話"))
+            dao.insert(item("b", hasEvent = true).copy(summary = "東京の打ち合わせ"))
+            dao.insert(item("c", hasEvent = true).copy(summary = "大阪へ出張"))
+            dao.observeSearchLike("%東京%", hasEventOnly = 1).test {
+                assertThat(awaitItem().map { it.id }).containsExactly("b")
+                cancelAndIgnoreRemainingEvents()
+            }
         }
     }
 }

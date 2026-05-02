@@ -79,4 +79,26 @@ interface InboxDao {
                 arrayOf<Any>(query, hasEventOnly),
             )
         )
+
+    /**
+     * LIKE-based fallback for short queries (1-2 chars) where the FTS5 trigram
+     * tokenizer cannot tokenize. Caller is responsible for wrapping the input
+     * in `%` wildcards. Searches the same columns as the FTS index.
+     */
+    @Query(
+        """
+        SELECT * FROM inbox_items
+        WHERE (
+            title LIKE :pattern OR
+            summary LIKE :pattern OR
+            original_text LIKE :pattern OR
+            tags LIKE :pattern OR
+            people LIKE :pattern OR
+            places LIKE :pattern
+        )
+        AND (:hasEventOnly = 0 OR event_title IS NOT NULL)
+        ORDER BY received_at DESC
+        """
+    )
+    fun observeSearchLike(pattern: String, hasEventOnly: Int): Flow<List<InboxItem>>
 }

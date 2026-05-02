@@ -22,7 +22,7 @@ object FtsCallback : RoomDatabase.Callback() {
                 tags,
                 people,
                 places,
-                tokenize='unicode61'
+                tokenize='trigram'
             )
             """.trimIndent()
         )
