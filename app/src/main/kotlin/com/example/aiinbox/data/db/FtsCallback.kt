@@ -11,14 +11,6 @@ object FtsCallback : RoomDatabase.Callback() {
         createTriggers(db)
     }
 
-    override fun onOpen(db: SupportSQLiteDatabase) {
-        super.onOpen(db)
-        // 既存DBにテーブルが無ければ作る（マイグレーション漏れ防御）
-        db.execSQL(
-            """SELECT name FROM sqlite_master WHERE type='table' AND name='inbox_fts'""",
-        )
-    }
-
     private fun createFtsTable(db: SupportSQLiteDatabase) {
         db.execSQL(
             """
