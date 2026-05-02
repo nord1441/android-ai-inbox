@@ -727,24 +727,26 @@ class TimeConverterTest {
 
     @Test
     fun `parses ISO8601 datetime with offset`() {
-        val r = TimeConverter.parseToMillis("2026-05-10T14:30:00+09:00", tz)
-        assertThat(r.millis).isEqualTo(1778398200000L)
+        val r = TimeConverter.parseToMillis("2026-05-10T14:30:00+09:00", tz)!!
+        // 2026-05-10T14:30:00+09:00 = 2026-05-10T05:30:00Z
+        assertThat(r.millis).isEqualTo(1778391000000L)
         assertThat(r.allDay).isFalse()
     }
 
     @Test
     fun `parses ISO8601 date only as start of day in given zone`() {
-        val r = TimeConverter.parseToMillis("2026-05-10", tz)
-        // 2026-05-10 00:00 JST = 2026-05-09 15:00 UTC
+        val r = TimeConverter.parseToMillis("2026-05-10", tz)!!
+        // 2026-05-10 00:00 JST = 2026-05-09T15:00:00Z
         assertThat(r.allDay).isTrue()
-        assertThat(r.millis).isEqualTo(1778346000000L)
+        assertThat(r.millis).isEqualTo(1778338800000L)
     }
 
     @Test
     fun `parses ISO8601 datetime without offset using given zone`() {
-        val r = TimeConverter.parseToMillis("2026-05-10T14:30", tz)
+        val r = TimeConverter.parseToMillis("2026-05-10T14:30", tz)!!
+        // 2026-05-10T14:30 JST = 2026-05-10T05:30:00Z
         assertThat(r.allDay).isFalse()
-        assertThat(r.millis).isEqualTo(1778398200000L)
+        assertThat(r.millis).isEqualTo(1778391000000L)
     }
 
     @Test
@@ -759,7 +761,8 @@ class TimeConverterTest {
 
     @Test
     fun `formats millis back to ISO8601 with offset`() {
-        val s = TimeConverter.formatFromMillis(1778398200000L, tz)
+        // 1778391000000 = 2026-05-10T05:30:00Z = 2026-05-10T14:30:00+09:00
+        val s = TimeConverter.formatFromMillis(1778391000000L, tz)
         assertThat(s).isEqualTo("2026-05-10T14:30:00+09:00")
     }
 }
@@ -1184,8 +1187,10 @@ class LlmResponseParserTest {
         assertThat(r.people).containsExactly("田中")
         assertThat(r.event).isNotNull()
         assertThat(r.event!!.title).isEqualTo("田中さんと打ち合わせ")
-        assertThat(r.event.startMillis).isEqualTo(1778050800000L) // 2026-05-03T14:00 JST
-        assertThat(r.event.endMillis).isEqualTo(1778054400000L)
+        // 2026-05-03T14:00:00+09:00 = 2026-05-03T05:00:00Z
+        assertThat(r.event.startMillis).isEqualTo(1777784400000L)
+        // 2026-05-03T15:00:00+09:00 = 2026-05-03T06:00:00Z
+        assertThat(r.event.endMillis).isEqualTo(1777788000000L)
     }
 
     @Test
@@ -1198,8 +1203,8 @@ class LlmResponseParserTest {
     fun `parses event with date only`() {
         val r = parser.parse(fixture("with_event_date_only.json"))!!
         assertThat(r.event).isNotNull()
-        // 2026-06-15 00:00 JST
-        assertThat(r.event!!.startMillis).isEqualTo(1781794800000L)
+        // 2026-06-15 00:00 JST = 2026-06-14T15:00:00Z
+        assertThat(r.event!!.startMillis).isEqualTo(1781449200000L)
         assertThat(r.event.endMillis).isNull()
     }
 
