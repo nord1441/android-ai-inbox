@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.aiinbox.data.repository.InboxRepository
 import com.example.aiinbox.work.WorkScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,6 +27,7 @@ class DetailViewModel @Inject constructor(
     private val itemId: String = checkNotNull(savedStateHandle[NAV_ARG_ID])
     private val deletedFlow = MutableStateFlow(false)
     private val errorFlow = MutableStateFlow<String?>(null)
+    private var pendingDeleteJob: Job? = null
 
     val uiState: StateFlow<DetailUiState> = combine(
         repository.observeById(itemId),
@@ -48,6 +51,7 @@ class DetailViewModel @Inject constructor(
             try {
                 repository.updateField(itemId, field, value)
             } catch (t: Throwable) {
+                if (t is CancellationException) throw t
                 errorFlow.value = t.message
             }
         }
@@ -58,6 +62,7 @@ class DetailViewModel @Inject constructor(
             try {
                 repository.updateListField(itemId, field, values)
             } catch (t: Throwable) {
+                if (t is CancellationException) throw t
                 errorFlow.value = t.message
             }
         }
@@ -70,7 +75,10 @@ class DetailViewModel @Inject constructor(
     }
 
     fun onDelete() {
-        viewModelScope.launch {
+        // Cancel any earlier delete cycle so its delayed finalize cannot
+        // wipe the buffer entry for THIS new delete cycle.
+        pendingDeleteJob?.cancel()
+        pendingDeleteJob = viewModelScope.launch {
             if (repository.softDelete(itemId)) {
                 deletedFlow.value = true
                 delay(UNDO_WINDOW_MS)
@@ -82,6 +90,9 @@ class DetailViewModel @Inject constructor(
     }
 
     fun onUndoDelete() {
+        // Cancel the pending finalize so it does not run after we've restored.
+        pendingDeleteJob?.cancel()
+        pendingDeleteJob = null
         viewModelScope.launch {
             if (repository.restoreDeleted(itemId)) {
                 deletedFlow.value = false
