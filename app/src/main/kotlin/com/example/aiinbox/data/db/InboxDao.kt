@@ -5,7 +5,10 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.Update
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -34,4 +37,20 @@ interface InboxDao {
 
     @Query("SELECT * FROM inbox_items WHERE status = :status ORDER BY received_at ASC")
     suspend fun getByStatus(status: ItemStatus): List<InboxItem>
+
+    @RawQuery
+    suspend fun searchFtsRaw(query: SupportSQLiteQuery): List<InboxItem>
+
+    suspend fun searchFts(query: String): List<InboxItem> =
+        searchFtsRaw(
+            SimpleSQLiteQuery(
+                """
+                SELECT i.* FROM inbox_items i
+                JOIN inbox_fts f ON f.id = i.id
+                WHERE inbox_fts MATCH ?
+                ORDER BY i.received_at DESC
+                """,
+                arrayOf(query),
+            )
+        )
 }
