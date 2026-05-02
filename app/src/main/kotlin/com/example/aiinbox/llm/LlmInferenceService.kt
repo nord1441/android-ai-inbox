@@ -74,22 +74,29 @@ class LlmInferenceService : Service() {
         while (scope.isActive) {
             val job = receiveJobOrTimeout() ?: break  // timeout → break, unload, stopSelf
             try {
+                android.util.Log.i(TAG, "Job received: variant=${job.variant} textLen=${job.text.length}")
                 updateNotif(getString(R.string.notification_llm_service_running))
+                android.util.Log.i(TAG, "ensureLoaded(${job.variant}) starting…")
                 llmEngine.ensureLoaded(job.variant)
+                android.util.Log.i(TAG, "ensureLoaded done. Starting summarize…")
                 val result = try {
                     llmEngine.summarize(job.text, job.hint)
                 } catch (oom: OutOfMemoryError) {
+                    android.util.Log.w(TAG, "OOM during summarize, retrying with halved context")
                     val truncated = job.text.take(job.text.length / 2)
                     llmEngine.summarize(truncated, job.hint)
                 }
+                android.util.Log.i(TAG, "summarize done. summary=${result.summary?.take(40)}")
                 job.deferred.complete(Result.success(result))
             } catch (t: Throwable) {
+                android.util.Log.e(TAG, "Job failed", t)
                 job.deferred.complete(Result.failure(t))
             } finally {
                 updateNotif(getString(R.string.notification_llm_service_idle))
             }
         }
         // Loop exited via timeout — unload model and stop the service.
+        android.util.Log.i(TAG, "Idle timeout — unloading model and stopping service")
         llmEngine.unload()
         stopSelf()
     }
@@ -126,6 +133,7 @@ class LlmInferenceService : Service() {
     }
 
     companion object {
+        private const val TAG = "LlmInferenceService"
         private const val CHANNEL_ID = "llm_service"
         private const val NOTIF_ID = 0x10A1
         private const val IDLE_TIMEOUT_MS = 5 * 60 * 1000L  // 5 minutes
