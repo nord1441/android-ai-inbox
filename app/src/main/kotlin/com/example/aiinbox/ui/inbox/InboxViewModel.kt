@@ -4,22 +4,69 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aiinbox.data.repository.InboxRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class InboxViewModel @Inject constructor(
     private val repository: InboxRepository,
 ) : ViewModel() {
 
-    val uiState: StateFlow<InboxUiState> = repository.observeAll()
-        .map { items -> InboxUiState(items = items, loading = false) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = InboxUiState(loading = true),
+    private val filterState = MutableStateFlow(InboxFilter())
+
+    private val itemsFlow = filterState
+        .flatMapLatest { filter -> repository.observeFiltered(filter) }
+
+    private val allItemsFlow = repository.observeAll()
+
+    val uiState: StateFlow<InboxUiState> = combine(
+        itemsFlow,
+        allItemsFlow,
+        filterState,
+    ) { items, allItems, filter ->
+        InboxUiState(
+            items = items,
+            loading = false,
+            filter = filter,
+            availableCategories = allItems.mapNotNull { it.category }.toSet(),
+            availableTags = allItems.flatMap { it.tags }.toSet(),
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = InboxUiState(loading = true),
+    )
+
+    fun onQueryChanged(query: String) {
+        filterState.value = filterState.value.copy(query = query)
+    }
+
+    fun onCategoryToggled(category: String) {
+        val cur = filterState.value.categories
+        filterState.value = filterState.value.copy(
+            categories = if (category in cur) cur - category else cur + category
+        )
+    }
+
+    fun onTagToggled(tag: String) {
+        val cur = filterState.value.tags
+        filterState.value = filterState.value.copy(
+            tags = if (tag in cur) cur - tag else cur + tag
+        )
+    }
+
+    fun onHasEventToggled() {
+        filterState.value = filterState.value.copy(hasEventOnly = !filterState.value.hasEventOnly)
+    }
+
+    fun onClearFilter() {
+        filterState.value = InboxFilter()
+    }
 }

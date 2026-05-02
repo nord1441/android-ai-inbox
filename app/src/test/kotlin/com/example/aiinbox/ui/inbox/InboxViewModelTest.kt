@@ -27,6 +27,7 @@ class InboxViewModelTest {
     fun `state reflects repository emissions`() = runTest {
         val flow = MutableStateFlow<List<InboxItem>>(emptyList())
         val repo: InboxRepository = mockk()
+        every { repo.observeFiltered(any()) } returns flow
         every { repo.observeAll() } returns flow
 
         val vm = InboxViewModel(repo)
@@ -34,6 +35,66 @@ class InboxViewModelTest {
             assertThat(awaitItem().items).isEmpty()
             flow.value = listOf(sampleItem("1"))
             assertThat(awaitItem().items).hasSize(1)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `query change reflects in filter state`() = runTest {
+        val flow = MutableStateFlow<List<InboxItem>>(emptyList())
+        val repo: InboxRepository = mockk()
+        every { repo.observeFiltered(any()) } returns flow
+        every { repo.observeAll() } returns flow
+
+        val vm = InboxViewModel(repo)
+        vm.uiState.test {
+            skipItems(1) // 初期値 (loading = true)
+            vm.onQueryChanged("hello")
+            var seen = awaitItem()
+            while (seen.filter.query != "hello") {
+                seen = awaitItem()
+            }
+            assertThat(seen.filter.query).isEqualTo("hello")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `category toggle reflects in filter state`() = runTest {
+        val flow = MutableStateFlow<List<InboxItem>>(emptyList())
+        val repo: InboxRepository = mockk()
+        every { repo.observeFiltered(any()) } returns flow
+        every { repo.observeAll() } returns flow
+
+        val vm = InboxViewModel(repo)
+        vm.uiState.test {
+            skipItems(1)
+            vm.onCategoryToggled("work")
+            var seen = awaitItem()
+            while (!seen.filter.categories.contains("work")) {
+                seen = awaitItem()
+            }
+            assertThat(seen.filter.categories).contains("work")
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `hasEvent toggle reflects in filter state`() = runTest {
+        val flow = MutableStateFlow<List<InboxItem>>(emptyList())
+        val repo: InboxRepository = mockk()
+        every { repo.observeFiltered(any()) } returns flow
+        every { repo.observeAll() } returns flow
+
+        val vm = InboxViewModel(repo)
+        vm.uiState.test {
+            skipItems(1)
+            vm.onHasEventToggled()
+            var seen = awaitItem()
+            while (!seen.filter.hasEventOnly) {
+                seen = awaitItem()
+            }
+            assertThat(seen.filter.hasEventOnly).isTrue()
             cancelAndIgnoreRemainingEvents()
         }
     }
