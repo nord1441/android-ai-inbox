@@ -12,7 +12,11 @@ open class ModelManager @Inject constructor(
 ) {
 
     fun modelFilePath(variant: ModelVariant): File {
-        val dir = File(context.noBackupFilesDir, "models").apply { mkdirs() }
+        // Use filesDir instead of noBackupFilesDir because some devices
+        // restrict write access to no_backup/ subdirs via run-as. allowBackup
+        // is already false at the manifest level so backup is excluded
+        // anyway.
+        val dir = File(context.filesDir, "models").apply { mkdirs() }
         return File(dir, modelFileName(variant))
     }
 
