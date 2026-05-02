@@ -8,6 +8,7 @@ import com.example.aiinbox.ui.inbox.InboxFilter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -119,6 +120,47 @@ class InboxRepository @Inject constructor(
                 updatedAt = System.currentTimeMillis(),
             )
         )
+    }
+
+    suspend fun updateListField(id: String, field: String, values: List<String>) {
+        val current = dao.getById(id) ?: return
+        val updated = when (field) {
+            "tags" -> current.copy(tags = values)
+            "people" -> current.copy(people = values)
+            "places" -> current.copy(places = values)
+            else -> error("updateListField: unsupported field $field")
+        }
+        dao.update(
+            updated.copy(
+                userEditedFields = updated.userEditedFields + field,
+                updatedAt = System.currentTimeMillis(),
+            )
+        )
+    }
+
+    /**
+     * In-memory buffer for soft-deleted items. Holds the item between [softDelete]
+     * and [finalizeDelete] so [restoreDeleted] can undo the deletion within the
+     * Snackbar window. Process death between softDelete and finalizeDelete loses
+     * the buffer entry (the DAO row is already gone) — acceptable for a 5s undo UX.
+     */
+    private val deletedBuffer = ConcurrentHashMap<String, InboxItem>()
+
+    suspend fun softDelete(id: String): Boolean {
+        val item = dao.getById(id) ?: return false
+        deletedBuffer[id] = item
+        dao.deleteById(id)
+        return true
+    }
+
+    suspend fun restoreDeleted(id: String): Boolean {
+        val item = deletedBuffer.remove(id) ?: return false
+        dao.insert(item)
+        return true
+    }
+
+    fun finalizeDelete(id: String) {
+        deletedBuffer.remove(id)
     }
 
     suspend fun delete(id: String) {
