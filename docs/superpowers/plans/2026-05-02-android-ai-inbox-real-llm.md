@@ -675,6 +675,23 @@ private fun CoroutineScope.launch(block: suspend kotlinx.coroutines.CoroutineSco
     android:foregroundServiceType="dataSync"
     android:exported="false"
     tools:targetApi="34"/>
+
+<!--
+    WorkManager の SystemForegroundService に foregroundServiceType を
+    付与するため、AGPの manifest merger でライブラリ側宣言を上書きする。
+    ModelDownloadWorker.getForegroundInfo() で FOREGROUND_SERVICE_TYPE_DATA_SYNC を
+    要求するので、マニフェスト側でも dataSync を宣言する必要がある（Android 14+ 必須）。
+    これがないと:
+      java.lang.IllegalArgumentException: foregroundServiceType 0x00000001
+        is not a subset of foregroundServiceType attribute 0x00000000
+        in service element of manifest file
+    で初回モデルDL時にクラッシュする。
+-->
+<service
+    android:name="androidx.work.impl.foreground.SystemForegroundService"
+    android:foregroundServiceType="dataSync"
+    tools:node="merge"
+    tools:replace="android:foregroundServiceType"/>
 ```
 
 - [ ] **Step 4: ビルド確認**

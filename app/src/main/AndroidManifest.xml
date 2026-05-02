@@ -44,6 +44,19 @@
             android:exported="false"
             tools:targetApi="34"/>
 
+        <!--
+            WorkManager の SystemForegroundService に foregroundServiceType を
+            付与するため、AGPの manifest merger でライブラリ側宣言を上書きする。
+            ModelDownloadWorker.getForegroundInfo() で
+            FOREGROUND_SERVICE_TYPE_DATA_SYNC を要求するので、
+            マニフェスト側でも dataSync を宣言する必要がある（Android 14+ 必須）。
+        -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge"
+            tools:replace="android:foregroundServiceType"/>
+
         <activity
             android:name=".share.ShareReceiverActivity"
             android:exported="true"
