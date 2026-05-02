@@ -8,6 +8,7 @@ import androidx.core.content.getSystemService
 object NotificationChannels {
     const val CHANNEL_SUMMARY_COMPLETE = "summary_complete"
     const val CHANNEL_EVENT_DETECTED = "event_detected"
+    const val CHANNEL_DOWNLOAD = "model_download"
 
     fun ensureCreated(context: Context) {
         val nm = context.getSystemService<NotificationManager>() ?: return
@@ -23,6 +24,13 @@ object NotificationChannels {
                 CHANNEL_EVENT_DETECTED,
                 context.getString(com.example.aiinbox.R.string.notification_channel_event_detected),
                 NotificationManager.IMPORTANCE_DEFAULT,
+            )
+        )
+        nm.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_DOWNLOAD,
+                context.getString(com.example.aiinbox.R.string.notification_channel_download),
+                NotificationManager.IMPORTANCE_LOW,
             )
         )
     }
