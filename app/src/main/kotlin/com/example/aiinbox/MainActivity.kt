@@ -59,7 +59,10 @@ class MainActivity : ComponentActivity() {
                         })
                     }
                     composable(Routes.INBOX) {
-                        InboxScreen(onItemClick = { id -> nav.navigate(Routes.detail(id)) })
+                        InboxScreen(
+                            onItemClick = { id -> nav.navigate(Routes.detail(id)) },
+                            onSettingsClick = { /* TODO Task 8: nav.navigate(Routes.SETTINGS) */ },
+                        )
                     }
                     composable(
                         route = Routes.DETAIL,

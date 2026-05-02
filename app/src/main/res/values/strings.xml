@@ -11,4 +11,11 @@
     <string name="notification_llm_service_idle">モデル待機中</string>
     <string name="notification_channel_download">モデルダウンロード</string>
     <string name="dl_notif_title">モデルをダウンロード中…</string>
+    <string name="inbox_search_placeholder">検索…</string>
+    <string name="inbox_no_matches">条件に一致するアイテムがありません</string>
+    <string name="inbox_pending_placeholder">(処理待ち...)</string>
+    <string name="status_processing">処理中</string>
+    <string name="status_failed">失敗</string>
+    <string name="filter_has_event">イベントあり</string>
+    <string name="settings_title">設定</string>
 </resources>
