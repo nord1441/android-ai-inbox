@@ -49,6 +49,16 @@ class LlmResponseParserTest {
     }
 
     @Test
+    fun `extracts JSON with nested event object from markdown code fence`() {
+        // Lazy-quantified regex must extend past inner '}' of the event sub-object.
+        val s = "Sure!\n```json\n" + fixture("valid.json") + "\n```"
+        val r = parser.parse(s)
+        assertThat(r).isNotNull()
+        assertThat(r!!.event).isNotNull()
+        assertThat(r.event!!.title).isEqualTo("田中さんと打ち合わせ")
+    }
+
+    @Test
     fun `returns null for malformed input`() {
         assertThat(parser.parse(fixture("malformed_json.json"))).isNull()
         assertThat(parser.parse("")).isNull()
