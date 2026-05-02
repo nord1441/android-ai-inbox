@@ -37,7 +37,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17" }
+    kotlinOptions {
+        jvmTarget = "17"
+        // Downgrade Kotlin metadata version so Hilt's KAPT-based component aggregation
+        // (hiltJavaCompileDebug) can read class metadata produced by the Kotlin 2.x compiler.
+        freeCompilerArgs += "-Xmetadata-version=1.9.0"
+    }
 
     buildFeatures { compose = true; buildConfig = true }
 
