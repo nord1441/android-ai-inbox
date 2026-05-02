@@ -18,4 +18,23 @@
     <string name="status_failed">失敗</string>
     <string name="filter_has_event">イベントあり</string>
     <string name="settings_title">設定</string>
+    <string name="action_reprocess">再要約</string>
+    <string name="action_delete">削除</string>
+    <string name="action_cancel">キャンセル</string>
+    <string name="action_undo">取り消す</string>
+    <string name="snackbar_deleted">削除しました</string>
+    <string name="confirm_reprocess_title">再要約しますか？</string>
+    <string name="confirm_reprocess_body">編集済みの項目は保護されます。</string>
+    <string name="detail_title_default">詳細</string>
+    <string name="detail_back">戻る</string>
+    <string name="detail_field_title">タイトル</string>
+    <string name="detail_field_summary">要約</string>
+    <string name="detail_field_category">カテゴリ</string>
+    <string name="detail_field_tags">タグ (カンマ区切り)</string>
+    <string name="detail_field_people">人物 (カンマ区切り)</string>
+    <string name="detail_field_places">場所 (カンマ区切り)</string>
+    <string name="detail_section_original">原文</string>
+    <string name="detail_event_low_confidence">⚠ 自動抽出の信頼度が低めです（要確認）</string>
+    <string name="detail_event_starts_at">開始: %1$s</string>
+    <string name="detail_event_location">場所: %1$s</string>
 </resources>
