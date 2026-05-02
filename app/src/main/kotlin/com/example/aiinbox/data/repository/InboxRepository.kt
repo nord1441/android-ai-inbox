@@ -4,7 +4,9 @@ import com.example.aiinbox.data.db.InboxDao
 import com.example.aiinbox.data.db.InboxItem
 import com.example.aiinbox.data.db.ItemStatus
 import com.example.aiinbox.llm.SummarizeResult
+import com.example.aiinbox.ui.inbox.InboxFilter
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,6 +17,27 @@ class InboxRepository @Inject constructor(
 ) {
 
     fun observeAll(): Flow<List<InboxItem>> = dao.observeAll()
+
+    /**
+     * Observe items matching [filter]. Routes to FTS5 (>=3 chars), LIKE (1-2 chars),
+     * or no-search filtered ([dao.observeFiltered]) for blank queries. Categories
+     * and tags are applied Kotlin-side after the DB-level Flow emits.
+     */
+    fun observeFiltered(filter: InboxFilter): Flow<List<InboxItem>> {
+        val hasEventInt = if (filter.hasEventOnly) 1 else 0
+        val q = filter.query
+        val baseFlow = when {
+            q.isBlank() -> dao.observeFiltered(hasEventInt)
+            q.length < 3 -> dao.observeSearchLike("%$q%", hasEventInt)
+            else -> dao.observeSearch("\"${q.replace("\"", "")}\"", hasEventInt)
+        }
+        return baseFlow.map { list ->
+            list.filter { item ->
+                (filter.categories.isEmpty() || item.category in filter.categories) &&
+                    (filter.tags.isEmpty() || item.tags.any { it in filter.tags })
+            }
+        }
+    }
 
     fun observeById(id: String): Flow<InboxItem?> = dao.observeById(id)
 
