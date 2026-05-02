@@ -32,3 +32,13 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Build output
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Roomスキーマはコミット対象（マイグレーションテストに必要）
+!app/schemas/

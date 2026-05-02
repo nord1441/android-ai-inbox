@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">AI Inbox</string>
+    <string name="toast_saved">保存しました</string>
+    <string name="inbox_empty">まだ何もありません。テキストを共有してみましょう。</string>
+    <string name="add_to_calendar">カレンダーに追加</string>
+    <string name="notification_summary_complete_title">要約が完了しました</string>
+    <string name="notification_channel_summary_complete">要約完了通知</string>
+    <string name="notification_channel_event_detected">イベント検出通知</string>
+</resources>

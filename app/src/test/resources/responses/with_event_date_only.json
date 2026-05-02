@@ -1,0 +1,16 @@
+{
+  "title": "資格試験",
+  "summary": "TOEIC試験は2026年6月15日に開催される。",
+  "category": "個人",
+  "tags": ["試験"],
+  "people": [],
+  "places": [],
+  "urls": [],
+  "event": {
+    "title": "TOEIC試験",
+    "start_iso": "2026-06-15",
+    "end_iso": null,
+    "location": null,
+    "confidence": 0.85
+  }
+}
