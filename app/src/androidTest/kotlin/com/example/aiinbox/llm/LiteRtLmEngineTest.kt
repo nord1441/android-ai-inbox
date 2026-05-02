@@ -14,11 +14,11 @@ import java.time.ZoneId
 
 @LargeTest
 @RunWith(AndroidJUnit4::class)
-class MediaPipeLlmEngineTest {
+class LiteRtLmEngineTest {
 
     private val ctx = ApplicationProvider.getApplicationContext<Context>()
-    private lateinit var engine: MediaPipeLlmEngine
-    private val variant = ModelVariant.GEMMA_3_1B
+    private lateinit var engine: LiteRtLmEngine
+    private val variant = ModelVariant.GEMMA_4_E2B
 
     @Before
     fun setup() {
@@ -27,7 +27,7 @@ class MediaPipeLlmEngineTest {
             "Skipping: model file not present at ${modelManager.modelFilePath(variant)}",
             modelManager.isModelPresent(variant)
         )
-        engine = MediaPipeLlmEngine(
+        engine = LiteRtLmEngine(
             ctx,
             modelManager,
             PromptBuilder(),
@@ -43,7 +43,7 @@ class MediaPipeLlmEngineTest {
             ContentHint.MEMO,
         )
         assertThat(r.summary).isNotEmpty()
-        assertThat(r.event).isNotNull()  // 来週木曜18時を抽出していることを期待
+        assertThat(r.event).isNotNull()
         engine.unload()
     }
 }

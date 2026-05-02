@@ -36,29 +36,32 @@ open class ModelManager @Inject constructor(
     }
 
     fun expectedSizeBytes(variant: ModelVariant): Long = when (variant) {
-        // Gemma 3 1B IT q4 block128 ekv4096 (placeholder — actual size unverified
-        // because the file is HF-gated; user verifies after download).
-        ModelVariant.GEMMA_3_1B -> 689_000_000L  // ≈689 MB
+        // Sizes from HF Content-Length on the .litertlm files.
+        ModelVariant.GEMMA_4_E2B -> 2_583_085_056L  // ≈2.40 GB
+        ModelVariant.GEMMA_4_E4B -> 3_654_467_584L  // ≈3.40 GB
         ModelVariant.FAKE -> 0L
     }
 
     open fun downloadUrl(variant: ModelVariant): String = when (variant) {
-        // litert-community ships Gemma 3 1B in the older "multi-prefill-seq"
-        // bundle naming (no -web suffix), which IS a MediaPipe Tasks GenAI
-        // compatible zip. The repo is HF-gated under the Gemma license; users
-        // must accept the license once on huggingface.co before this URL
-        // becomes downloadable. App-side download will currently 401 — the
-        // workaround until HF token auth is implemented is to download the
-        // file manually via browser and `adb push` it to the device's
-        // no_backup/files/models/ directory under the local file name.
-        ModelVariant.GEMMA_3_1B ->
-            "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/" +
-                "Gemma3-1B-IT_multi-prefill-seq_q4_block128_ekv4096.task"
+        // litert-community publishes Gemma 4 in `.litertlm` format for use with
+        // the LiteRT-LM Android API. The HF repo is gated under the Gemma
+        // license; users must accept the license once at huggingface.co before
+        // these URLs become downloadable. App-side download currently 401s
+        // until an HF-token-aware ModelDownloadWorker lands. Workaround: pull
+        // the file in a browser, then `adb push` it to the device's
+        // files/models/<localName>.
+        ModelVariant.GEMMA_4_E2B ->
+            "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/" +
+                "gemma-4-E2B-it.litertlm"
+        ModelVariant.GEMMA_4_E4B ->
+            "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/" +
+                "gemma-4-E4B-it.litertlm"
         ModelVariant.FAKE -> error("FAKE variant has no URL")
     }
 
     private fun modelFileName(variant: ModelVariant): String = when (variant) {
-        ModelVariant.GEMMA_3_1B -> "gemma-3-1b-q4-ekv4096.task"
-        ModelVariant.FAKE -> "fake.task"
+        ModelVariant.GEMMA_4_E2B -> "gemma-4-e2b.litertlm"
+        ModelVariant.GEMMA_4_E4B -> "gemma-4-e4b.litertlm"
+        ModelVariant.FAKE -> "fake.litertlm"
     }
 }

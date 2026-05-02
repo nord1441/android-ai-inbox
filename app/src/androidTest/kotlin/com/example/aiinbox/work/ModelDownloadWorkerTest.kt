@@ -37,7 +37,7 @@ class ModelDownloadWorkerTest {
         )
         server.start()
         modelManager = TestableModelManager(ctx, urlOverride = server.url("/model.task").toString())
-        modelManager.deleteModel(ModelVariant.GEMMA_3_1B)
+        modelManager.deleteModel(ModelVariant.GEMMA_4_E2B)
     }
 
     @After
@@ -53,14 +53,14 @@ class ModelDownloadWorkerTest {
         )
 
         val worker = TestListenableWorkerBuilder<ModelDownloadWorker>(ctx)
-            .setInputData(Data.Builder().putString(ModelDownloadWorker.KEY_VARIANT, "GEMMA_3_1B").build())
+            .setInputData(Data.Builder().putString(ModelDownloadWorker.KEY_VARIANT, "GEMMA_4_E2B").build())
             .setWorkerFactory(TestModelDownloadWorkerFactory(modelManager, httpClient))
             .build()
 
         val result = worker.doWork()
         assertThat(result).isEqualTo(ListenableWorker.Result.success())
-        assertThat(modelManager.isModelPresent(ModelVariant.GEMMA_3_1B)).isTrue()
-        assertThat(modelManager.modelFilePath(ModelVariant.GEMMA_3_1B).readBytes()).isEqualTo(payload)
+        assertThat(modelManager.isModelPresent(ModelVariant.GEMMA_4_E2B)).isTrue()
+        assertThat(modelManager.modelFilePath(ModelVariant.GEMMA_4_E2B).readBytes()).isEqualTo(payload)
     }
 }
 

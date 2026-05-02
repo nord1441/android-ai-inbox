@@ -3,7 +3,7 @@ package com.example.aiinbox.di
 import com.example.aiinbox.llm.ContentHintDetector
 import com.example.aiinbox.llm.LlmEngine
 import com.example.aiinbox.llm.LlmResponseParser
-import com.example.aiinbox.llm.MediaPipeLlmEngine
+import com.example.aiinbox.llm.LiteRtLmEngine
 import com.example.aiinbox.llm.PromptBuilder
 import dagger.Binds
 import dagger.Module
@@ -18,7 +18,7 @@ import javax.inject.Singleton
 abstract class LlmBindsModule {
     @Binds
     @Singleton
-    abstract fun bindLlmEngine(impl: MediaPipeLlmEngine): LlmEngine
+    abstract fun bindLlmEngine(impl: LiteRtLmEngine): LlmEngine
 }
 
 @Module

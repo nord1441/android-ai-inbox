@@ -4,17 +4,10 @@ import kotlinx.coroutines.flow.StateFlow
 
 enum class ModelVariant {
     FAKE,
-    /**
-     * Gemma 3 1B IT, q4 block128, effective context 4096.
-     * MediaPipe Tasks GenAI compatible bundle (~689 MB).
-     *
-     * Note: distribution is HuggingFace-gated (Gemma license click-through).
-     * Plan 2 originally targeted Gemma 4 but its only Android distribution
-     * is .litertlm (LiteRT-LM API), not MediaPipe Tasks GenAI bundles.
-     * Gemma 3 1B is the largest readily-available MediaPipe-compatible
-     * Gemma model.
-     */
-    GEMMA_3_1B,
+    /** Gemma 4 E2B IT in `.litertlm` format. ~2.4 GB. For 6–8 GB RAM devices. */
+    GEMMA_4_E2B,
+    /** Gemma 4 E4B IT in `.litertlm` format. ~3.4 GB. For 8 GB+ RAM devices. */
+    GEMMA_4_E4B,
 }
 
 interface LlmEngine {
