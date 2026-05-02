@@ -53,4 +53,30 @@ interface InboxDao {
                 arrayOf(query),
             )
         )
+
+    @Query(
+        """
+        SELECT * FROM inbox_items
+        WHERE (:hasEventOnly = 0 OR event_title IS NOT NULL)
+        ORDER BY received_at DESC
+        """
+    )
+    fun observeFiltered(hasEventOnly: Int): Flow<List<InboxItem>>
+
+    @RawQuery(observedEntities = [InboxItem::class])
+    fun observeSearchRaw(query: SupportSQLiteQuery): Flow<List<InboxItem>>
+
+    fun observeSearch(query: String, hasEventOnly: Int): Flow<List<InboxItem>> =
+        observeSearchRaw(
+            SimpleSQLiteQuery(
+                """
+                SELECT i.* FROM inbox_items i
+                JOIN inbox_fts f ON f.id = i.id
+                WHERE inbox_fts MATCH ?
+                  AND (? = 0 OR i.event_title IS NOT NULL)
+                ORDER BY i.received_at DESC
+                """,
+                arrayOf<Any>(query, hasEventOnly),
+            )
+        )
 }
