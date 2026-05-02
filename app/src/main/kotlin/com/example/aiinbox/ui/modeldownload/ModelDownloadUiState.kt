@@ -11,4 +11,6 @@ data class ModelDownloadUiState(
     val errorMessage: String? = null,
     val showMobileNetworkWarning: Boolean = false,
     val canStart: Boolean = true,
+    /** True once the user has stored a HuggingFace access token. */
+    val hasHfToken: Boolean = false,
 )

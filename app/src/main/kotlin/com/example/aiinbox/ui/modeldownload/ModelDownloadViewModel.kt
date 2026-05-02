@@ -12,6 +12,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.example.aiinbox.data.crypto.HfTokenStore
 import com.example.aiinbox.llm.ModelManager
 import com.example.aiinbox.llm.RamDetector
 import com.example.aiinbox.work.ModelDownloadWorker
@@ -26,12 +27,26 @@ import javax.inject.Inject
 class ModelDownloadViewModel @Inject constructor(
     application: Application,
     private val modelManager: ModelManager,
+    private val hfTokenStore: HfTokenStore,
 ) : AndroidViewModel(application) {
 
     private val _state = MutableStateFlow(
-        ModelDownloadUiState(variant = RamDetector.selectVariantForDevice(application))
+        ModelDownloadUiState(
+            variant = RamDetector.selectVariantForDevice(application),
+            hasHfToken = hfTokenStore.hasToken(),
+        )
     )
     val state: StateFlow<ModelDownloadUiState> = _state.asStateFlow()
+
+    fun onTokenEntered(token: String) {
+        if (token.isBlank()) {
+            hfTokenStore.clear()
+            _state.value = _state.value.copy(hasHfToken = false)
+        } else {
+            hfTokenStore.set(token)
+            _state.value = _state.value.copy(hasHfToken = true, errorMessage = null)
+        }
+    }
 
     fun onStartClicked() {
         if (!isOnUnmeteredNetwork()) {

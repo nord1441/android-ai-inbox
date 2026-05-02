@@ -8,6 +8,7 @@ import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
 import com.example.aiinbox.R
+import com.example.aiinbox.data.crypto.HfTokenStore
 import com.example.aiinbox.llm.ModelManager
 import com.example.aiinbox.llm.ModelVariant
 import com.example.aiinbox.notification.NotificationChannels
@@ -26,6 +27,7 @@ class ModelDownloadWorker @AssistedInject constructor(
     @Assisted params: WorkerParameters,
     private val modelManager: ModelManager,
     private val httpClient: OkHttpClient,
+    private val hfTokenStore: HfTokenStore,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun getForegroundInfo(): ForegroundInfo {
@@ -81,7 +83,13 @@ class ModelDownloadWorker @AssistedInject constructor(
 
         val request = Request.Builder()
             .url(modelManager.downloadUrl(variant))
-            .apply { if (existing > 0) header("Range", "bytes=$existing-") }
+            .apply {
+                if (existing > 0) header("Range", "bytes=$existing-")
+                hfTokenStore.get()?.let { token ->
+                    header("Authorization", "Bearer $token")
+                    android.util.Log.i(TAG, "Using HF token for authenticated download")
+                }
+            }
             .build()
 
         android.util.Log.i(TAG, "executing HTTP GET ${request.url}")
