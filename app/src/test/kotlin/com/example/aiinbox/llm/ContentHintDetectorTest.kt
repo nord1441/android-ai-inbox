@@ -35,4 +35,47 @@ class ContentHintDetectorTest {
         assertThat(det.detect("")).isEqualTo(ContentHint.UNKNOWN)
         assertThat(det.detect("   ")).isEqualTo(ContentHint.UNKNOWN)
     }
+
+    @Test
+    fun `detect with screenshot attachment returns SCREENSHOT`() {
+        val detector = ContentHintDetector()
+        val result = detector.detect(
+            text = "",
+            attachmentKinds = listOf(com.example.aiinbox.data.db.AttachmentKind.SCREENSHOT),
+        )
+        assertThat(result).isEqualTo(ContentHint.SCREENSHOT)
+    }
+
+    @Test
+    fun `detect with shared image attachment only returns IMAGE_OCR`() {
+        val detector = ContentHintDetector()
+        val result = detector.detect(
+            text = "",
+            attachmentKinds = listOf(com.example.aiinbox.data.db.AttachmentKind.SHARED_IMAGE),
+        )
+        assertThat(result).isEqualTo(ContentHint.IMAGE_OCR)
+    }
+
+    @Test
+    fun `detect mixed attachments prefers SCREENSHOT`() {
+        val detector = ContentHintDetector()
+        val result = detector.detect(
+            text = "",
+            attachmentKinds = listOf(
+                com.example.aiinbox.data.db.AttachmentKind.SHARED_IMAGE,
+                com.example.aiinbox.data.db.AttachmentKind.SCREENSHOT,
+            ),
+        )
+        assertThat(result).isEqualTo(ContentHint.SCREENSHOT)
+    }
+
+    @Test
+    fun `detect text-only with empty attachments uses original detection`() {
+        val detector = ContentHintDetector()
+        val result = detector.detect(
+            text = "https://example.com これは記事です。".repeat(20),
+            attachmentKinds = emptyList(),
+        )
+        assertThat(result).isEqualTo(ContentHint.WEB_ARTICLE)
+    }
 }

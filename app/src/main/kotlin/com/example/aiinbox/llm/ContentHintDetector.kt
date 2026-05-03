@@ -32,4 +32,23 @@ class ContentHintDetector {
 
         return ContentHint.MEMO
     }
+
+    /**
+     * 添付情報も考慮して content hint を判定。
+     *  - SCREENSHOT 添付があれば SCREENSHOT
+     *  - SHARED_IMAGE のみなら IMAGE_OCR
+     *  - 添付なし or テキストが支配的なら従来の text 判定
+     */
+    fun detect(
+        text: String,
+        attachmentKinds: List<com.example.aiinbox.data.db.AttachmentKind>,
+    ): ContentHint {
+        if (attachmentKinds.any { it == com.example.aiinbox.data.db.AttachmentKind.SCREENSHOT }) {
+            return ContentHint.SCREENSHOT
+        }
+        if (attachmentKinds.isNotEmpty() && text.isBlank()) {
+            return ContentHint.IMAGE_OCR
+        }
+        return detect(text)
+    }
 }

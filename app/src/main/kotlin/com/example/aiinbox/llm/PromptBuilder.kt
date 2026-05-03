@@ -12,6 +12,8 @@ class PromptBuilder(
             ContentHint.CHAT_OR_EMAIL -> CHAT_GUIDANCE
             ContentHint.WEB_ARTICLE -> ARTICLE_GUIDANCE
             ContentHint.MEMO -> MEMO_GUIDANCE
+            ContentHint.SCREENSHOT -> SCREENSHOT_GUIDANCE
+            ContentHint.IMAGE_OCR -> IMAGE_OCR_GUIDANCE
             ContentHint.UNKNOWN -> ""
         }
 
@@ -63,5 +65,11 @@ class PromptBuilder(
 
         private const val MEMO_GUIDANCE = """この入力は個人のメモまたは議事録です。
 要点を summary に、固有名詞があれば people / places に抽出してください。"""
+
+        private const val SCREENSHOT_GUIDANCE = """この入力はスクリーンショットから抽出したテキストです。
+UI要素やチャット内容を解釈し、重要な情報を summary に抽出してください。"""
+
+        private const val IMAGE_OCR_GUIDANCE = """この入力は画像から OCR で抽出したテキストです。
+読み取れた情報を整理し、重要な内容を summary にまとめてください。"""
     }
 }
