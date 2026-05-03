@@ -12,6 +12,18 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  *  3. inbox_fts に ocr_text 列を追加（テーブル再作成 + トリガ再作成）
  *  4. attachments の INSERT/UPDATE/DELETE トリガを追加（FTS 行を再構築）
  */
+/**
+ * v1 → v2 マイグレーション。詳細は [migrate] 内コメント参照。
+ *
+ * **マイグレーションテストでの注意:**
+ * `MigrationTestHelper.runMigrationsAndValidate(...)` を呼ぶ際は必ず
+ * `validateDroppedTables = false` を指定すること。理由は以下:
+ * - `inbox_fts` は FTS5 仮想テーブルで `FtsCallback` がランタイム生成する
+ * - Room の `exportSchema` には仮想テーブル / トリガが含まれない
+ * - `true` 指定だと「想定外のテーブルが存在する」として検証が失敗する
+ *
+ * 関連: [AppDatabaseMigrationTest]
+ */
 val MIGRATION_1_2: Migration = object : Migration(1, 2) {
     override fun migrate(db: SupportSQLiteDatabase) {
         // === 1) inbox_items を再作成して original_text を NULL 許可に ===
