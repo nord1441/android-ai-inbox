@@ -63,6 +63,7 @@ android {
         getByName("main").kotlin.srcDirs("src/main/kotlin")
         getByName("test").kotlin.srcDirs("src/test/kotlin")
         getByName("androidTest").kotlin.srcDirs("src/androidTest/kotlin")
+        getByName("androidTest").assets.srcDirs("$projectDir/schemas")
     }
 
     testOptions { unitTests.isIncludeAndroidResources = true }
