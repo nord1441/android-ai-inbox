@@ -66,6 +66,20 @@
             tools:replace="android:foregroundServiceType"/>
 
         <activity
+            android:name=".screenshot.ScreenshotCaptureActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:label="@string/screenshot_launcher_label"
+            android:icon="@drawable/ic_screenshot_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".share.ShareReceiverActivity"
             android:exported="true"
             android:theme="@android:style/Theme.NoDisplay"

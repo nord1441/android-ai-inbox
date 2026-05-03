@@ -46,4 +46,7 @@
     <string name="settings_db_size_value">%1$d KB</string>
     <string name="settings_variant_none">未DL</string>
     <string name="settings_back">戻る</string>
+    <string name="screenshot_launcher_label">📸 スクショ to AI Inbox</string>
+    <string name="screenshot_tile_label">スクショ to AI Inbox</string>
+    <string name="screenshot_consent_canceled">キャンセルしました</string>
 </resources>
