@@ -107,4 +107,71 @@ interface InboxDao {
         """
     )
     fun observeSearchLike(pattern: String, hasEventOnly: Int): Flow<List<InboxItem>>
+
+    @androidx.room.Transaction
+    @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
+    suspend fun getByIdWithAttachments(id: String): InboxItemWithAttachments?
+
+    @androidx.room.Transaction
+    @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
+    fun observeByIdWithAttachments(id: String): kotlinx.coroutines.flow.Flow<InboxItemWithAttachments?>
+
+    @androidx.room.Transaction
+    @Query("SELECT * FROM inbox_items ORDER BY received_at DESC")
+    fun observeAllWithAttachments(): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>>
+
+    @androidx.room.Transaction
+    @Query(
+        """
+        SELECT * FROM inbox_items
+        WHERE (:hasEventOnly = 0 OR event_title IS NOT NULL)
+        ORDER BY received_at DESC
+        """
+    )
+    fun observeFilteredWithAttachments(hasEventOnly: Int): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>>
+
+    @androidx.room.Transaction
+    @androidx.room.RawQuery(observedEntities = [InboxItem::class, Attachment::class])
+    fun observeSearchWithAttachmentsRaw(
+        query: androidx.sqlite.db.SupportSQLiteQuery,
+    ): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>>
+
+    fun observeSearchWithAttachments(
+        query: String,
+        hasEventOnly: Int,
+    ): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>> =
+        observeSearchWithAttachmentsRaw(
+            androidx.sqlite.db.SimpleSQLiteQuery(
+                """
+                SELECT i.* FROM inbox_items i
+                JOIN inbox_fts f ON f.id = i.id
+                WHERE inbox_fts MATCH ?
+                  AND (? = 0 OR i.event_title IS NOT NULL)
+                ORDER BY i.received_at DESC
+                """,
+                arrayOf<Any>(query, hasEventOnly),
+            )
+        )
+
+    @androidx.room.Transaction
+    @Query(
+        """
+        SELECT * FROM inbox_items
+        WHERE (
+            title LIKE :pattern OR
+            summary LIKE :pattern OR
+            original_text LIKE :pattern OR
+            tags LIKE :pattern OR
+            people LIKE :pattern OR
+            places LIKE :pattern OR
+            EXISTS (SELECT 1 FROM attachments a WHERE a.item_id = inbox_items.id AND a.ocr_text LIKE :pattern)
+        )
+        AND (:hasEventOnly = 0 OR event_title IS NOT NULL)
+        ORDER BY received_at DESC
+        """
+    )
+    fun observeSearchLikeWithAttachments(
+        pattern: String,
+        hasEventOnly: Int,
+    ): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>>
 }
