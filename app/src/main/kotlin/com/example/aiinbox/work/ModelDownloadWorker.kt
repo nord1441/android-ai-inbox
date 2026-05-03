@@ -60,13 +60,17 @@ class ModelDownloadWorker @AssistedInject constructor(
 
         return try {
             android.util.Log.i(TAG, "calling setForeground…")
-            setForeground(getForegroundInfo())
+            try {
+                setForeground(getForegroundInfo())
+            } catch (e: IllegalStateException) {
+                android.util.Log.w(TAG, "setForeground skipped (not supported in this context): ${e.message}")
+            }
             android.util.Log.i(TAG, "setForeground returned. starting downloadWithResume…")
             withContext(Dispatchers.IO) {
                 downloadWithResume(variant)
             }
             android.util.Log.i(TAG, "downloadWithResume done. Result.success.")
-            Result.success(Data.Builder().putString(KEY_VARIANT, variant.name).build())
+            Result.success()
         } catch (t: Throwable) {
             android.util.Log.e(TAG, "doWork threw (attempt=$runAttemptCount)", t)
             if (runAttemptCount < MAX_RETRIES) Result.retry()

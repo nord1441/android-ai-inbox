@@ -30,16 +30,27 @@ class DetailViewModel @Inject constructor(
     private var pendingDeleteJob: Job? = null
 
     val uiState: StateFlow<DetailUiState> = combine(
-        repository.observeById(itemId),
+        repository.observeItemWithAttachments(itemId),
         deletedFlow,
         errorFlow,
-    ) { item, deleted, err ->
-        DetailUiState(
-            item = item,
-            loading = item == null && !deleted,
-            deleted = deleted,
-            errorMessage = err,
-        )
+    ) { wrap, deleted, err ->
+        if (wrap == null) {
+            DetailUiState(
+                item = null,
+                attachments = emptyList(),
+                loading = !deleted,
+                deleted = deleted,
+                errorMessage = err,
+            )
+        } else {
+            DetailUiState(
+                item = wrap.item,
+                attachments = wrap.attachments.sortedBy { it.ordering },
+                loading = false,
+                deleted = deleted,
+                errorMessage = err,
+            )
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),

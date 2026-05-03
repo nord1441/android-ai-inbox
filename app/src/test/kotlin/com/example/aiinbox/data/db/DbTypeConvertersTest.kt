@@ -34,4 +34,13 @@ class DbTypeConvertersTest {
             assertThat(c.itemStatusFromString(c.itemStatusToString(s))).isEqualTo(s)
         }
     }
+
+    @Test
+    fun `attachmentKind round trips through TypeConverter`() {
+        val converter = DbTypeConverters()
+        assertThat(converter.attachmentKindFromString(converter.attachmentKindToString(AttachmentKind.SCREENSHOT)))
+            .isEqualTo(AttachmentKind.SCREENSHOT)
+        assertThat(converter.attachmentKindFromString(converter.attachmentKindToString(AttachmentKind.SHARED_IMAGE)))
+            .isEqualTo(AttachmentKind.SHARED_IMAGE)
+    }
 }

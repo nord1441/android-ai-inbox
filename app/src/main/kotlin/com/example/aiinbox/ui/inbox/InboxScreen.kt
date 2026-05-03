@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -32,13 +35,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.example.aiinbox.R
-import com.example.aiinbox.data.db.InboxItem
+import com.example.aiinbox.data.db.Attachment
+import com.example.aiinbox.data.db.InboxItemWithAttachments
 import com.example.aiinbox.data.db.ItemStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,8 +99,8 @@ fun InboxScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(state.items, key = { it.id }) { item ->
-                        InboxItemCard(item = item, onClick = { onItemClick(item.id) })
+                    items(state.items, key = { it.item.id }) { wrap ->
+                        InboxItemCard(wrap = wrap, onClick = { onItemClick(wrap.item.id) })
                     }
                 }
             }
@@ -134,7 +140,9 @@ private fun FilterChipsRow(state: InboxUiState, vm: InboxViewModel) {
 }
 
 @Composable
-private fun InboxItemCard(item: InboxItem, onClick: () -> Unit) {
+private fun InboxItemCard(wrap: InboxItemWithAttachments, onClick: () -> Unit) {
+    val item = wrap.item
+    val attachments = wrap.attachments.sortedBy { it.ordering }
     val cardColors = if (item.status == ItemStatus.FAILED) {
         CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
     } else {
@@ -142,27 +150,61 @@ private fun InboxItemCard(item: InboxItem, onClick: () -> Unit) {
     }
     Card(modifier = Modifier.clickable { onClick() }, colors = cardColors) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Text(
-                text = item.title ?: item.originalText.take(40),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = item.summary ?: stringResource(R.string.inbox_pending_placeholder),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.padding(top = 4.dp),
-            ) {
-                if (item.status == ItemStatus.PENDING || item.status == ItemStatus.PROCESSING) {
-                    StatusChip(stringResource(R.string.status_processing))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (attachments.isNotEmpty()) {
+                    AttachmentThumbnails(attachments)
+                    Spacer(Modifier.width(12.dp))
                 }
-                if (item.status == ItemStatus.FAILED) StatusChip(stringResource(R.string.status_failed))
-                if (item.event != null) StatusChip("📅")
-                item.category?.let { StatusChip(it) }
+                Column {
+                    Text(
+                        text = item.title?.takeIf { it.isNotBlank() }
+                            ?: item.originalText?.take(40)?.takeIf { it.isNotBlank() }
+                            ?: stringResource(R.string.inbox_pending_placeholder),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = item.summary ?: stringResource(R.string.inbox_pending_placeholder),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(top = 4.dp),
+                    ) {
+                        if (item.status == ItemStatus.PENDING || item.status == ItemStatus.PROCESSING) {
+                            StatusChip(stringResource(R.string.status_processing))
+                        }
+                        if (item.status == ItemStatus.FAILED) StatusChip(stringResource(R.string.status_failed))
+                        if (item.event != null) StatusChip("📅")
+                        item.category?.let { StatusChip(it) }
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun AttachmentThumbnails(atts: List<Attachment>) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        val visible = atts.take(2)
+        visible.forEachIndexed { idx, att ->
+            AsyncImage(
+                model = att,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(44.dp)
+                    .let { if (idx > 0) it.padding(start = 4.dp) else it },
+                contentScale = ContentScale.Crop,
+            )
+        }
+        if (atts.size > 2) {
+            Text(
+                "+${atts.size - 2}",
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.padding(start = 4.dp),
+            )
         }
     }
 }

@@ -26,6 +26,8 @@ class FakeLlmEngine @Inject constructor() : LlmEngine {
             ContentHint.WEB_ARTICLE -> "ニュース"
             ContentHint.CHAT_OR_EMAIL -> "仕事"
             ContentHint.MEMO -> "個人"
+            ContentHint.SCREENSHOT -> "その他"
+            ContentHint.IMAGE_OCR -> "その他"
             ContentHint.UNKNOWN -> "その他"
         }
         val event = if (text.contains("__FAKE_EVENT__")) {

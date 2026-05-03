@@ -32,4 +32,10 @@ class DbTypeConverters {
 
     @TypeConverter
     fun itemStatusFromString(s: String): ItemStatus = ItemStatus.valueOf(s)
+
+    @TypeConverter
+    fun attachmentKindToString(k: AttachmentKind): String = k.name
+
+    @TypeConverter
+    fun attachmentKindFromString(s: String): AttachmentKind = AttachmentKind.valueOf(s)
 }

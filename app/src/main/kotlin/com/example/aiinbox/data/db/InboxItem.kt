@@ -16,7 +16,7 @@ import androidx.room.PrimaryKey
 )
 data class InboxItem(
     @PrimaryKey val id: String,
-    @ColumnInfo(name = "original_text") val originalText: String,
+    @ColumnInfo(name = "original_text") val originalText: String?,
     @ColumnInfo(name = "original_subject") val originalSubject: String?,
     @ColumnInfo(name = "source_app") val sourceApp: String?,
     @ColumnInfo(name = "received_at") val receivedAt: Long,

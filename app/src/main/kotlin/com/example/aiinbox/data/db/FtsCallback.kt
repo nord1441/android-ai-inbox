@@ -11,11 +11,7 @@ object FtsCallback : RoomDatabase.Callback() {
         createTriggers(db)
     }
 
-    private fun createFtsTable(db: SupportSQLiteDatabase) {
-        // NOTE: tokenize='trigram' enables CJK substring search for queries >= 3 chars.
-        // Switching tokenizer post-release on existing installs requires a wipe + rebuild
-        // (DROP VIRTUAL TABLE inbox_fts; recreate; reinsert from inbox_items) — schema version
-        // bump alone won't propagate the change because IF NOT EXISTS short-circuits.
+    fun createFtsTable(db: SupportSQLiteDatabase) {
         db.execSQL(
             """
             CREATE VIRTUAL TABLE IF NOT EXISTS inbox_fts USING fts5(
@@ -26,29 +22,34 @@ object FtsCallback : RoomDatabase.Callback() {
                 tags,
                 people,
                 places,
+                ocr_text,
                 tokenize='trigram'
             )
             """.trimIndent()
         )
     }
 
-    private fun createTriggers(db: SupportSQLiteDatabase) {
-        // INSERT trigger
+    fun createTriggers(db: SupportSQLiteDatabase) {
+        // === inbox_items 側トリガ：ocr_text 列を attachments から集計 ===
         db.execSQL(
             """
             CREATE TRIGGER IF NOT EXISTS inbox_items_ai AFTER INSERT ON inbox_items BEGIN
-                INSERT INTO inbox_fts(id, title, summary, original_text, tags, people, places)
+                INSERT INTO inbox_fts(id, title, summary, original_text, tags, people, places, ocr_text)
                 VALUES (new.id,
                         coalesce(new.title, ''),
                         coalesce(new.summary, ''),
-                        new.original_text,
+                        coalesce(new.original_text, ''),
                         coalesce(new.tags, ''),
                         coalesce(new.people, ''),
-                        coalesce(new.places, ''));
+                        coalesce(new.places, ''),
+                        coalesce(
+                            (SELECT GROUP_CONCAT(ocr_text, ' ')
+                               FROM attachments WHERE item_id = new.id),
+                            ''
+                        ));
             END;
             """.trimIndent()
         )
-        // DELETE trigger
         db.execSQL(
             """
             CREATE TRIGGER IF NOT EXISTS inbox_items_ad AFTER DELETE ON inbox_items BEGIN
@@ -56,19 +57,88 @@ object FtsCallback : RoomDatabase.Callback() {
             END;
             """.trimIndent()
         )
-        // UPDATE trigger
         db.execSQL(
             """
             CREATE TRIGGER IF NOT EXISTS inbox_items_au AFTER UPDATE ON inbox_items BEGIN
                 DELETE FROM inbox_fts WHERE id = old.id;
-                INSERT INTO inbox_fts(id, title, summary, original_text, tags, people, places)
+                INSERT INTO inbox_fts(id, title, summary, original_text, tags, people, places, ocr_text)
                 VALUES (new.id,
                         coalesce(new.title, ''),
                         coalesce(new.summary, ''),
-                        new.original_text,
+                        coalesce(new.original_text, ''),
                         coalesce(new.tags, ''),
                         coalesce(new.people, ''),
-                        coalesce(new.places, ''));
+                        coalesce(new.places, ''),
+                        coalesce(
+                            (SELECT GROUP_CONCAT(ocr_text, ' ')
+                               FROM attachments WHERE item_id = new.id),
+                            ''
+                        ));
+            END;
+            """.trimIndent()
+        )
+
+        // === attachments 側トリガ：item_id の FTS 行を再構築 ===
+        db.execSQL(
+            """
+            CREATE TRIGGER IF NOT EXISTS attachments_ai AFTER INSERT ON attachments BEGIN
+                DELETE FROM inbox_fts WHERE id = new.item_id;
+                INSERT INTO inbox_fts(id, title, summary, original_text, tags, people, places, ocr_text)
+                SELECT i.id,
+                       coalesce(i.title, ''),
+                       coalesce(i.summary, ''),
+                       coalesce(i.original_text, ''),
+                       coalesce(i.tags, ''),
+                       coalesce(i.people, ''),
+                       coalesce(i.places, ''),
+                       coalesce(
+                           (SELECT GROUP_CONCAT(ocr_text, ' ')
+                              FROM attachments WHERE item_id = i.id),
+                           ''
+                       )
+                  FROM inbox_items i WHERE i.id = new.item_id;
+            END;
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            CREATE TRIGGER IF NOT EXISTS attachments_au AFTER UPDATE ON attachments BEGIN
+                DELETE FROM inbox_fts WHERE id = new.item_id;
+                INSERT INTO inbox_fts(id, title, summary, original_text, tags, people, places, ocr_text)
+                SELECT i.id,
+                       coalesce(i.title, ''),
+                       coalesce(i.summary, ''),
+                       coalesce(i.original_text, ''),
+                       coalesce(i.tags, ''),
+                       coalesce(i.people, ''),
+                       coalesce(i.places, ''),
+                       coalesce(
+                           (SELECT GROUP_CONCAT(ocr_text, ' ')
+                              FROM attachments WHERE item_id = i.id),
+                           ''
+                       )
+                  FROM inbox_items i WHERE i.id = new.item_id;
+            END;
+            """.trimIndent()
+        )
+        db.execSQL(
+            """
+            CREATE TRIGGER IF NOT EXISTS attachments_ad AFTER DELETE ON attachments BEGIN
+                DELETE FROM inbox_fts WHERE id = old.item_id;
+                INSERT INTO inbox_fts(id, title, summary, original_text, tags, people, places, ocr_text)
+                SELECT i.id,
+                       coalesce(i.title, ''),
+                       coalesce(i.summary, ''),
+                       coalesce(i.original_text, ''),
+                       coalesce(i.tags, ''),
+                       coalesce(i.people, ''),
+                       coalesce(i.places, ''),
+                       coalesce(
+                           (SELECT GROUP_CONCAT(ocr_text, ' ')
+                              FROM attachments WHERE item_id = i.id),
+                           ''
+                       )
+                  FROM inbox_items i WHERE i.id = old.item_id;
             END;
             """.trimIndent()
         )

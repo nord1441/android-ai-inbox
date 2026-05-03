@@ -63,6 +63,7 @@ android {
         getByName("main").kotlin.srcDirs("src/main/kotlin")
         getByName("test").kotlin.srcDirs("src/test/kotlin")
         getByName("androidTest").kotlin.srcDirs("src/androidTest/kotlin")
+        getByName("androidTest").assets.srcDirs("$projectDir/schemas")
     }
 
     testOptions { unitTests.isIncludeAndroidResources = true }
@@ -100,9 +101,13 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.litertlm.android)
+    implementation(libs.mlkit.text.recognition.latin)
+    implementation(libs.mlkit.text.recognition.japanese)
+    implementation(libs.coil.compose)
     implementation(libs.okhttp)
     testImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(libs.okhttp.mockwebserver)
