@@ -36,4 +36,18 @@ class InboxItemTest {
         )
         assertThat(event.confidence).isIn(com.google.common.collect.Range.closed(0f, 1f))
     }
+
+    @Test
+    fun `inboxItem allows null originalText`() {
+        val item = InboxItem(
+            id = "i1",
+            originalText = null,
+            originalSubject = null,
+            sourceApp = "screenshot:capture",
+            receivedAt = 1L,
+            status = ItemStatus.PENDING,
+            updatedAt = 1L,
+        )
+        assertThat(item.originalText).isNull()
+    }
 }

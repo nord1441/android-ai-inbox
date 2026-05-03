@@ -126,7 +126,7 @@ fun DetailScreen(
                     val intent = CalendarIntentBuilder.build(
                         event = ev,
                         summary = item.summary,
-                        originalTextSnippet = item.originalText.take(500),
+                        originalTextSnippet = item.originalText?.take(500) ?: "",
                     )
                     ctx.startActivity(intent)
                 }
@@ -170,7 +170,7 @@ fun DetailScreen(
                         text = stringResource(R.string.detail_section_original),
                         modifier = Modifier.padding(bottom = 4.dp),
                     )
-                    Text(item.originalText)
+                    Text(item.originalText ?: "")
                 }
             }
         }

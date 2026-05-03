@@ -48,7 +48,7 @@ class InboxRepository @Inject constructor(
 
     suspend fun getPendingItems(): List<InboxItem> = dao.getByStatus(ItemStatus.PENDING)
 
-    suspend fun createPendingItem(text: String, subject: String?, sourceApp: String?): String {
+    suspend fun createPendingItem(text: String?, subject: String?, sourceApp: String?): String {
         val now = System.currentTimeMillis()
         val item = InboxItem(
             id = UUID.randomUUID().toString(),

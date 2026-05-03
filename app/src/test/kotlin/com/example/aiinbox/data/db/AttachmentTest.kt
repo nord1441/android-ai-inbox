@@ -22,21 +22,20 @@ class AttachmentTest {
         assertThat(a.ocrCompletedAt).isNull()
     }
 
-    // TODO Task 4: enable once originalText is nullable
-    // @Test
-    // fun `inboxItemWithAttachments preserves ordering`() {
-    //     val item = InboxItem(
-    //         id = "i1",
-    //         originalText = null,
-    //         originalSubject = null,
-    //         sourceApp = null,
-    //         receivedAt = 0L,
-    //         status = ItemStatus.PENDING,
-    //         updatedAt = 0L,
-    //     )
-    //     val a0 = Attachment("a0", "i1", 0, AttachmentKind.SHARED_IMAGE, "0.jpg.enc", "image/jpeg", 1, 1, 1L, null, null, 0L)
-    //     val a1 = Attachment("a1", "i1", 1, AttachmentKind.SHARED_IMAGE, "1.jpg.enc", "image/jpeg", 1, 1, 1L, null, null, 0L)
-    //     val w = InboxItemWithAttachments(item, listOf(a0, a1))
-    //     assertThat(w.attachments.map { it.ordering }).containsExactly(0, 1).inOrder()
-    // }
+    @Test
+    fun `inboxItemWithAttachments preserves ordering`() {
+        val item = InboxItem(
+            id = "i1",
+            originalText = null,
+            originalSubject = null,
+            sourceApp = null,
+            receivedAt = 0L,
+            status = ItemStatus.PENDING,
+            updatedAt = 0L,
+        )
+        val a0 = Attachment("a0", "i1", 0, AttachmentKind.SHARED_IMAGE, "0.jpg.enc", "image/jpeg", 1, 1, 1L, null, null, 0L)
+        val a1 = Attachment("a1", "i1", 1, AttachmentKind.SHARED_IMAGE, "1.jpg.enc", "image/jpeg", 1, 1, 1L, null, null, 0L)
+        val w = InboxItemWithAttachments(item, listOf(a0, a1))
+        assertThat(w.attachments.map { it.ordering }).containsExactly(0, 1).inOrder()
+    }
 }

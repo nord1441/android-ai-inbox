@@ -27,7 +27,7 @@ class SummarizeWorker @AssistedInject constructor(
         val itemId = inputData.getString(KEY_ITEM_ID) ?: return Result.failure()
         val item = repository.getById(itemId) ?: return Result.failure()
 
-        android.util.Log.i(TAG, "doWork start. itemId=$itemId attempt=$runAttemptCount textLen=${item.originalText.length}")
+        android.util.Log.i(TAG, "doWork start. itemId=$itemId attempt=$runAttemptCount textLen=${item.originalText?.length ?: 0}")
 
         // モデルが無ければ「準備待ち」状態のまま戻す（DLが完了したら別Workerが回収）
         val variant = modelManager.currentVariant() ?: run {
@@ -38,9 +38,9 @@ class SummarizeWorker @AssistedInject constructor(
 
         repository.markProcessing(itemId)
         return try {
-            val hint = hintDetector.detect(item.originalText)
+            val hint = hintDetector.detect(item.originalText.orEmpty())
             android.util.Log.i(TAG, "Submitting to LlmServiceClient (hint=$hint)…")
-            val r = client.submit(item.originalText, hint, variant)
+            val r = client.submit(item.originalText.orEmpty(), hint, variant)
             r.fold(
                 onSuccess = { res ->
                     android.util.Log.i(TAG, "Summarize success. summary=${res.summary?.take(40)}")

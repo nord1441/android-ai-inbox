@@ -30,7 +30,7 @@ class CalendarActionReceiver : BroadcastReceiver() {
                     val calIntent = CalendarIntentBuilder.build(
                         event = event,
                         summary = item.summary,
-                        originalTextSnippet = item.originalText.take(500),
+                        originalTextSnippet = item.originalText?.take(500) ?: "",
                     )
                     // CalendarIntentBuilder.build already adds FLAG_ACTIVITY_NEW_TASK,
                     // which is required when starting an Activity from a BroadcastReceiver.

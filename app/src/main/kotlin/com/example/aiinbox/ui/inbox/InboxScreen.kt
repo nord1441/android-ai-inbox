@@ -143,7 +143,7 @@ private fun InboxItemCard(item: InboxItem, onClick: () -> Unit) {
     Card(modifier = Modifier.clickable { onClick() }, colors = cardColors) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(
-                text = item.title ?: item.originalText.take(40),
+                text = item.title ?: item.originalText?.take(40) ?: "",
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
