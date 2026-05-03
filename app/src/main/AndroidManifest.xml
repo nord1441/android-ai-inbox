@@ -46,6 +46,12 @@
             android:exported="false"
             tools:targetApi="34"/>
 
+        <service
+            android:name=".screenshot.ScreenshotCaptureService"
+            android:foregroundServiceType="mediaProjection"
+            android:exported="false"
+            tools:targetApi="34"/>
+
         <!--
             WorkManager の SystemForegroundService に foregroundServiceType を
             付与するため、AGPの manifest merger でライブラリ側宣言を上書きする。
