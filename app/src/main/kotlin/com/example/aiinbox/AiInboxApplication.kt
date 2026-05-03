@@ -11,9 +11,12 @@ import kotlinx.coroutines.SupervisorJob
 import javax.inject.Inject
 
 @HiltAndroidApp
-class AiInboxApplication : Application(), Configuration.Provider {
+class AiInboxApplication : Application(), Configuration.Provider, coil.ImageLoaderFactory {
 
     @Inject lateinit var workerFactory: HiltWorkerFactory
+    @Inject lateinit var imageLoader: coil.ImageLoader
+
+    override fun newImageLoader(): coil.ImageLoader = imageLoader
 
     /**
      * Application-scoped CoroutineScope that lives as long as the process.

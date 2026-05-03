@@ -27,7 +27,7 @@ class InboxViewModel @Inject constructor(
     // re-subscribes and `items` and `filter` always travel together.
     private val itemsWithFilterFlow = filterState
         .flatMapLatest { filter ->
-            repository.observeFiltered(filter).map { items -> items to filter }
+            repository.observeFilteredWithAttachments(filter).map { items -> items to filter }
         }
 
     private val allItemsFlow = repository.observeAll()

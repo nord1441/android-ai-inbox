@@ -2,6 +2,7 @@ package com.example.aiinbox.ui.inbox
 
 import app.cash.turbine.test
 import com.example.aiinbox.data.db.InboxItem
+import com.example.aiinbox.data.db.InboxItemWithAttachments
 import com.example.aiinbox.data.db.ItemStatus
 import com.example.aiinbox.data.repository.InboxRepository
 import com.google.common.truth.Truth.assertThat
@@ -25,15 +26,16 @@ class InboxViewModelTest {
 
     @Test
     fun `state reflects repository emissions`() = runTest {
-        val flow = MutableStateFlow<List<InboxItem>>(emptyList())
+        val wrappedFlow = MutableStateFlow<List<InboxItemWithAttachments>>(emptyList())
+        val allFlow = MutableStateFlow<List<InboxItem>>(emptyList())
         val repo: InboxRepository = mockk()
-        every { repo.observeFiltered(any()) } returns flow
-        every { repo.observeAll() } returns flow
+        every { repo.observeFilteredWithAttachments(any()) } returns wrappedFlow
+        every { repo.observeAll() } returns allFlow
 
         val vm = InboxViewModel(repo)
         vm.uiState.test {
             assertThat(awaitItem().items).isEmpty()
-            flow.value = listOf(sampleItem("1"))
+            wrappedFlow.value = listOf(sampleItemWithAttachments("1"))
             assertThat(awaitItem().items).hasSize(1)
             cancelAndIgnoreRemainingEvents()
         }
@@ -41,10 +43,11 @@ class InboxViewModelTest {
 
     @Test
     fun `query change reflects in filter state`() = runTest {
-        val flow = MutableStateFlow<List<InboxItem>>(emptyList())
+        val wrappedFlow = MutableStateFlow<List<InboxItemWithAttachments>>(emptyList())
+        val allFlow = MutableStateFlow<List<InboxItem>>(emptyList())
         val repo: InboxRepository = mockk()
-        every { repo.observeFiltered(any()) } returns flow
-        every { repo.observeAll() } returns flow
+        every { repo.observeFilteredWithAttachments(any()) } returns wrappedFlow
+        every { repo.observeAll() } returns allFlow
 
         val vm = InboxViewModel(repo)
         vm.uiState.test {
@@ -61,10 +64,11 @@ class InboxViewModelTest {
 
     @Test
     fun `category toggle reflects in filter state`() = runTest {
-        val flow = MutableStateFlow<List<InboxItem>>(emptyList())
+        val wrappedFlow = MutableStateFlow<List<InboxItemWithAttachments>>(emptyList())
+        val allFlow = MutableStateFlow<List<InboxItem>>(emptyList())
         val repo: InboxRepository = mockk()
-        every { repo.observeFiltered(any()) } returns flow
-        every { repo.observeAll() } returns flow
+        every { repo.observeFilteredWithAttachments(any()) } returns wrappedFlow
+        every { repo.observeAll() } returns allFlow
 
         val vm = InboxViewModel(repo)
         vm.uiState.test {
@@ -81,10 +85,11 @@ class InboxViewModelTest {
 
     @Test
     fun `hasEvent toggle reflects in filter state`() = runTest {
-        val flow = MutableStateFlow<List<InboxItem>>(emptyList())
+        val wrappedFlow = MutableStateFlow<List<InboxItemWithAttachments>>(emptyList())
+        val allFlow = MutableStateFlow<List<InboxItem>>(emptyList())
         val repo: InboxRepository = mockk()
-        every { repo.observeFiltered(any()) } returns flow
-        every { repo.observeAll() } returns flow
+        every { repo.observeFilteredWithAttachments(any()) } returns wrappedFlow
+        every { repo.observeAll() } returns allFlow
 
         val vm = InboxViewModel(repo)
         vm.uiState.test {
@@ -101,15 +106,16 @@ class InboxViewModelTest {
 
     @Test
     fun `availableCategories and availableTags derived from observeAll`() = runTest {
-        val flow = MutableStateFlow<List<InboxItem>>(emptyList())
+        val wrappedFlow = MutableStateFlow<List<InboxItemWithAttachments>>(emptyList())
+        val allFlow = MutableStateFlow<List<InboxItem>>(emptyList())
         val repo: InboxRepository = mockk()
-        every { repo.observeFiltered(any()) } returns flow
-        every { repo.observeAll() } returns flow
+        every { repo.observeFilteredWithAttachments(any()) } returns wrappedFlow
+        every { repo.observeAll() } returns allFlow
 
         val vm = InboxViewModel(repo)
         vm.uiState.test {
             skipItems(1)
-            flow.value = listOf(
+            allFlow.value = listOf(
                 sampleItem("1").copy(category = "work", tags = listOf("urgent", "")),
                 sampleItem("2").copy(category = "personal", tags = listOf("urgent", "home")),
                 sampleItem("3").copy(category = null, tags = emptyList()),
@@ -129,4 +135,7 @@ class InboxViewModelTest {
         originalSubject = null, sourceApp = null,
         receivedAt = 1L, status = ItemStatus.COMPLETED, updatedAt = 1L,
     )
+
+    private fun sampleItemWithAttachments(id: String) =
+        InboxItemWithAttachments(item = sampleItem(id), attachments = emptyList())
 }
