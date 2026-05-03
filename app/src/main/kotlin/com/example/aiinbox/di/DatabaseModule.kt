@@ -3,6 +3,7 @@ package com.example.aiinbox.di
 import android.content.Context
 import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
 import com.example.aiinbox.data.db.AppDatabase
+import com.example.aiinbox.data.db.AttachmentDao
 import com.example.aiinbox.data.db.InboxDao
 import com.example.aiinbox.data.db.buildEncryptedDatabase
 import dagger.Module
@@ -31,4 +32,7 @@ object DatabaseModule {
 
     @Provides
     fun provideInboxDao(db: AppDatabase): InboxDao = db.inboxDao()
+
+    @Provides
+    fun provideAttachmentDao(db: AppDatabase): AttachmentDao = db.attachmentDao()
 }
