@@ -184,13 +184,29 @@ fun DetailScreen(
                 onCommit = { viewModel.onEditListField("places", it) },
             )
 
-            Card {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = stringResource(R.string.detail_section_original),
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                    Text(item.originalText ?: "")
+            val originalText = item.originalText
+            if (!originalText.isNullOrBlank()) {
+                Card {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = stringResource(R.string.detail_section_original),
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        )
+                        Text(originalText)
+                    }
+                }
+            } else if (state.attachments.isEmpty()) {
+                Card {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = stringResource(R.string.detail_section_original),
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        )
+                        Text(
+                            stringResource(R.string.detail_no_original),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
             }
         }

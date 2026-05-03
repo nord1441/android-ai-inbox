@@ -157,7 +157,9 @@ private fun InboxItemCard(wrap: InboxItemWithAttachments, onClick: () -> Unit) {
                 }
                 Column {
                     Text(
-                        text = item.title ?: item.originalText?.take(40) ?: "",
+                        text = item.title?.takeIf { it.isNotBlank() }
+                            ?: item.originalText?.take(40)?.takeIf { it.isNotBlank() }
+                            ?: stringResource(R.string.inbox_pending_placeholder),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
