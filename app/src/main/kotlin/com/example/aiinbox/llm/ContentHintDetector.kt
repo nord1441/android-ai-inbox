@@ -1,5 +1,7 @@
 package com.example.aiinbox.llm
 
+import com.example.aiinbox.data.db.AttachmentKind
+
 class ContentHintDetector {
     private val urlRegex = Regex("""\bhttps?://\S+""")
     private val emailHeaderRegex = Regex("""^(From|To|Subject|Cc|Bcc):""", RegexOption.IGNORE_CASE)
@@ -41,9 +43,9 @@ class ContentHintDetector {
      */
     fun detect(
         text: String,
-        attachmentKinds: List<com.example.aiinbox.data.db.AttachmentKind>,
+        attachmentKinds: List<AttachmentKind>,
     ): ContentHint {
-        if (attachmentKinds.any { it == com.example.aiinbox.data.db.AttachmentKind.SCREENSHOT }) {
+        if (attachmentKinds.any { it == AttachmentKind.SCREENSHOT }) {
             return ContentHint.SCREENSHOT
         }
         if (attachmentKinds.isNotEmpty() && text.isBlank()) {

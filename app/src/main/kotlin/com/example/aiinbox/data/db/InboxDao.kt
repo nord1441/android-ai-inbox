@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RawQuery
+import androidx.room.Transaction
 import androidx.room.Update
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
@@ -108,19 +109,19 @@ interface InboxDao {
     )
     fun observeSearchLike(pattern: String, hasEventOnly: Int): Flow<List<InboxItem>>
 
-    @androidx.room.Transaction
+    @Transaction
     @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
     suspend fun getByIdWithAttachments(id: String): InboxItemWithAttachments?
 
-    @androidx.room.Transaction
+    @Transaction
     @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
-    fun observeByIdWithAttachments(id: String): kotlinx.coroutines.flow.Flow<InboxItemWithAttachments?>
+    fun observeByIdWithAttachments(id: String): Flow<InboxItemWithAttachments?>
 
-    @androidx.room.Transaction
+    @Transaction
     @Query("SELECT * FROM inbox_items ORDER BY received_at DESC")
-    fun observeAllWithAttachments(): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>>
+    fun observeAllWithAttachments(): Flow<List<InboxItemWithAttachments>>
 
-    @androidx.room.Transaction
+    @Transaction
     @Query(
         """
         SELECT * FROM inbox_items
@@ -128,20 +129,20 @@ interface InboxDao {
         ORDER BY received_at DESC
         """
     )
-    fun observeFilteredWithAttachments(hasEventOnly: Int): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>>
+    fun observeFilteredWithAttachments(hasEventOnly: Int): Flow<List<InboxItemWithAttachments>>
 
-    @androidx.room.Transaction
-    @androidx.room.RawQuery(observedEntities = [InboxItem::class, Attachment::class])
+    @Transaction
+    @RawQuery(observedEntities = [InboxItem::class, Attachment::class])
     fun observeSearchWithAttachmentsRaw(
-        query: androidx.sqlite.db.SupportSQLiteQuery,
-    ): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>>
+        query: SupportSQLiteQuery,
+    ): Flow<List<InboxItemWithAttachments>>
 
     fun observeSearchWithAttachments(
         query: String,
         hasEventOnly: Int,
-    ): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>> =
+    ): Flow<List<InboxItemWithAttachments>> =
         observeSearchWithAttachmentsRaw(
-            androidx.sqlite.db.SimpleSQLiteQuery(
+            SimpleSQLiteQuery(
                 """
                 SELECT i.* FROM inbox_items i
                 JOIN inbox_fts f ON f.id = i.id
@@ -153,7 +154,7 @@ interface InboxDao {
             )
         )
 
-    @androidx.room.Transaction
+    @Transaction
     @Query(
         """
         SELECT * FROM inbox_items
@@ -173,5 +174,5 @@ interface InboxDao {
     fun observeSearchLikeWithAttachments(
         pattern: String,
         hasEventOnly: Int,
-    ): kotlinx.coroutines.flow.Flow<List<InboxItemWithAttachments>>
+    ): Flow<List<InboxItemWithAttachments>>
 }

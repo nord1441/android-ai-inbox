@@ -243,7 +243,7 @@ class InboxRepository @Inject constructor(
     fun observeAllWithAttachments(): Flow<List<InboxItemWithAttachments>> =
         dao.observeAllWithAttachments()
 
-    fun observeFilteredWithAttachments(filter: com.example.aiinbox.ui.inbox.InboxFilter): Flow<List<InboxItemWithAttachments>> {
+    fun observeFilteredWithAttachments(filter: InboxFilter): Flow<List<InboxItemWithAttachments>> {
         val hasEventInt = if (filter.hasEventOnly) 1 else 0
         val q = filter.query.trim()
         val baseFlow = when {
