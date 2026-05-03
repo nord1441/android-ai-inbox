@@ -45,8 +45,6 @@ class ShareReceiverActivity : ComponentActivity() {
             return
         }
 
-        Toast.makeText(this, getString(R.string.toast_saved), Toast.LENGTH_SHORT).show()
-
         // Activity finish 後も Uri 権限を保つため、application context にも grant
         for (uri in imageUris) {
             try {
@@ -56,6 +54,7 @@ class ShareReceiverActivity : ComponentActivity() {
             }
         }
         val appContext = applicationContext
+        val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
         val scope: CoroutineScope = (application as? AiInboxApplication)?.applicationScope
             ?: CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -87,8 +86,15 @@ class ShareReceiverActivity : ComponentActivity() {
                     }.getOrNull()
                 }
 
-                if (text.isNullOrBlank() && drafts.isEmpty()) {
+                if (text.isNullOrBlank() && drafts.isEmpty() && imageUris.isNotEmpty()) {
                     android.util.Log.w(TAG, "All images failed to read; nothing to persist")
+                    mainHandler.post {
+                        Toast.makeText(appContext, "画像読込に失敗しました", Toast.LENGTH_SHORT).show()
+                    }
+                    return@launch
+                }
+
+                if (text.isNullOrBlank() && drafts.isEmpty()) {
                     return@launch
                 }
 
@@ -96,29 +102,55 @@ class ShareReceiverActivity : ComponentActivity() {
                     text = text, subject = subject, sourceApp = sourceApp, drafts = drafts,
                 )
                 workScheduler.enqueueSummarize(itemId)
+                mainHandler.post {
+                    Toast.makeText(appContext, R.string.toast_saved, Toast.LENGTH_SHORT).show()
+                }
                 android.util.Log.i(TAG, "createPendingItemWithAttachments id=$itemId attachments=${drafts.size}")
             } catch (t: Throwable) {
                 android.util.Log.e(TAG, "applicationScope coroutine threw", t)
+                mainHandler.post {
+                    Toast.makeText(appContext, "保存に失敗しました", Toast.LENGTH_SHORT).show()
+                }
             }
         }
         finish()
     }
 
     private fun collectImageUris(intent: Intent): List<Uri> {
-        val type = intent.type ?: return emptyList()
-        if (!type.startsWith("image/")) return emptyList()
+        val type = intent.type
         return when (intent.action) {
             Intent.ACTION_SEND -> {
-                @Suppress("DEPRECATION")
-                val uri: Uri? = intent.getParcelableExtra(Intent.EXTRA_STREAM)
-                listOfNotNull(uri)
+                if (type != null && type.startsWith("image/")) {
+                    @Suppress("DEPRECATION")
+                    val uri: Uri? = intent.getParcelableExtra(Intent.EXTRA_STREAM)
+                    listOfNotNull(uri)
+                } else {
+                    clipDataImageUris(intent)
+                }
             }
             Intent.ACTION_SEND_MULTIPLE -> {
-                @Suppress("DEPRECATION")
-                intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM).orEmpty().toList()
+                if (type != null && type.startsWith("image/")) {
+                    @Suppress("DEPRECATION")
+                    intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM).orEmpty().toList()
+                } else {
+                    clipDataImageUris(intent)
+                }
             }
             else -> emptyList()
         }
+    }
+
+    private fun clipDataImageUris(intent: Intent): List<Uri> {
+        val clip = intent.clipData ?: return emptyList()
+        val uris = mutableListOf<Uri>()
+        for (i in 0 until clip.itemCount) {
+            val itemUri = clip.getItemAt(i).uri ?: continue
+            val mime = contentResolver.getType(itemUri)
+            if (mime != null && mime.startsWith("image/")) {
+                uris += itemUri
+            }
+        }
+        return uris
     }
 
     companion object {

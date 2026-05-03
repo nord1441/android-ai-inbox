@@ -65,6 +65,7 @@ class ScreenshotCaptureService : Service() {
         val mp = mpm.getMediaProjection(resultCode, data)
         if (mp == null) {
             android.util.Log.w(TAG, "MediaProjection null — stopping")
+            Toast.makeText(this, "スクリーンショットに失敗しました", Toast.LENGTH_SHORT).show()
             cleanupAndStop()
             return START_NOT_STICKY
         }
