@@ -3,6 +3,7 @@ package com.example.aiinbox.ui.detail
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.example.aiinbox.data.db.InboxItem
+import com.example.aiinbox.data.db.InboxItemWithAttachments
 import com.example.aiinbox.data.db.ItemStatus
 import com.example.aiinbox.data.repository.InboxRepository
 import com.example.aiinbox.work.WorkScheduler
@@ -30,19 +31,23 @@ class DetailViewModelTest {
     private fun newVm(repo: InboxRepository, ws: WorkScheduler = mockk(relaxed = true)) =
         DetailViewModel(repo, ws, SavedStateHandle(mapOf(DetailViewModel.NAV_ARG_ID to "abc")))
 
+    private fun wrap(item: InboxItem) = InboxItemWithAttachments(item, emptyList())
+
     @Test
     fun `loads item by id from save state`() = runTest {
-        val flow = MutableStateFlow<InboxItem?>(null)
+        val flow = MutableStateFlow<InboxItemWithAttachments?>(null)
         val repo: InboxRepository = mockk(relaxed = true)
-        every { repo.observeById("abc") } returns flow
+        every { repo.observeItemWithAttachments("abc") } returns flow
 
         val vm = newVm(repo)
         vm.uiState.test {
             assertThat(awaitItem().item).isNull()
-            flow.value = InboxItem(
-                id = "abc", originalText = "x",
-                originalSubject = null, sourceApp = null,
-                receivedAt = 1L, status = ItemStatus.COMPLETED, updatedAt = 1L,
+            flow.value = wrap(
+                InboxItem(
+                    id = "abc", originalText = "x",
+                    originalSubject = null, sourceApp = null,
+                    receivedAt = 1L, status = ItemStatus.COMPLETED, updatedAt = 1L,
+                )
             )
             assertThat(awaitItem().item?.id).isEqualTo("abc")
             cancelAndIgnoreRemainingEvents()
@@ -52,7 +57,7 @@ class DetailViewModelTest {
     @Test
     fun `onEditField calls repository updateField`() = runTest {
         val repo: InboxRepository = mockk(relaxed = true)
-        every { repo.observeById("abc") } returns MutableStateFlow(null)
+        every { repo.observeItemWithAttachments("abc") } returns MutableStateFlow(null)
         val vm = newVm(repo)
         vm.onEditField("title", "新タイトル")
         coVerify { repo.updateField("abc", "title", "新タイトル") }
@@ -61,7 +66,7 @@ class DetailViewModelTest {
     @Test
     fun `onEditListField calls repository updateListField`() = runTest {
         val repo: InboxRepository = mockk(relaxed = true)
-        every { repo.observeById("abc") } returns MutableStateFlow(null)
+        every { repo.observeItemWithAttachments("abc") } returns MutableStateFlow(null)
         val vm = newVm(repo)
         vm.onEditListField("tags", listOf("a", "b"))
         coVerify { repo.updateListField("abc", "tags", listOf("a", "b")) }
@@ -70,7 +75,7 @@ class DetailViewModelTest {
     @Test
     fun `onReprocess enqueues summarize work`() = runTest {
         val repo: InboxRepository = mockk(relaxed = true)
-        every { repo.observeById("abc") } returns MutableStateFlow(null)
+        every { repo.observeItemWithAttachments("abc") } returns MutableStateFlow(null)
         val ws: WorkScheduler = mockk(relaxed = true)
         val vm = newVm(repo, ws)
         vm.onReprocess()
@@ -80,7 +85,7 @@ class DetailViewModelTest {
     @Test
     fun `onDelete sets deleted state`() = runTest {
         val repo: InboxRepository = mockk(relaxed = true)
-        every { repo.observeById("abc") } returns MutableStateFlow(null)
+        every { repo.observeItemWithAttachments("abc") } returns MutableStateFlow(null)
         coEvery { repo.softDelete("abc") } returns true
         val vm = newVm(repo)
         vm.uiState.test {
@@ -96,7 +101,7 @@ class DetailViewModelTest {
     @Test
     fun `onUndoDelete clears deleted state`() = runTest {
         val repo: InboxRepository = mockk(relaxed = true)
-        every { repo.observeById("abc") } returns MutableStateFlow(null)
+        every { repo.observeItemWithAttachments("abc") } returns MutableStateFlow(null)
         coEvery { repo.softDelete("abc") } returns true
         coEvery { repo.restoreDeleted("abc") } returns true
         val vm = newVm(repo)

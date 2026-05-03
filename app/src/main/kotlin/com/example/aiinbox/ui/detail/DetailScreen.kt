@@ -1,10 +1,18 @@
 package com.example.aiinbox.ui.detail
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -17,6 +25,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -33,6 +42,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -40,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.aiinbox.R
 import com.example.aiinbox.calendar.CalendarIntentBuilder
+import com.example.aiinbox.data.db.Attachment
 import com.example.aiinbox.data.db.ExtractedEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,6 +66,7 @@ fun DetailScreen(
     val ctx = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     var showReprocessDialog by remember { mutableStateOf(false) }
+    var viewerIndex: Int? by remember { mutableStateOf(null) }
 
     // Snackbar for delete + undo
     LaunchedEffect(state.deleted) {
@@ -132,6 +147,11 @@ fun DetailScreen(
                 }
             }
 
+            AttachmentGallery(
+                atts = state.attachments,
+                onAttachmentClick = { viewerIndex = it },
+            )
+
             EditableField(
                 label = stringResource(R.string.detail_field_title),
                 value = item.title ?: "",
@@ -174,6 +194,14 @@ fun DetailScreen(
                 }
             }
         }
+    }
+
+    viewerIndex?.let { idx ->
+        FullscreenViewer(
+            atts = state.attachments,
+            initialIndex = idx,
+            onDismiss = { viewerIndex = null },
+        )
     }
 
     if (showReprocessDialog) {
@@ -271,6 +299,84 @@ private fun EventCard(event: ExtractedEvent, onAddToCalendar: () -> Unit) {
             Button(onClick = onAddToCalendar) {
                 Text(stringResource(R.string.add_to_calendar))
             }
+        }
+    }
+}
+
+@Composable
+private fun AttachmentGallery(
+    atts: List<Attachment>,
+    onAttachmentClick: (Int) -> Unit,
+) {
+    if (atts.isEmpty()) return
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        itemsIndexed(atts.sortedBy { it.ordering }) { idx, att ->
+            coil.compose.AsyncImage(
+                model = att,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(120.dp)
+                    .clickable { onAttachmentClick(idx) },
+                contentScale = ContentScale.Crop,
+            )
+        }
+    }
+    var ocrExpanded by remember { mutableStateOf(false) }
+    TextButton(onClick = { ocrExpanded = !ocrExpanded }) {
+        Text(if (ocrExpanded) "OCR テキストを隠す" else "OCR テキストを表示")
+    }
+    if (ocrExpanded) {
+        atts.sortedBy { it.ordering }.forEachIndexed { idx, att ->
+            Text(
+                "[${idx + 1}] ${att.ocrText ?: "(未抽出)"}",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+        }
+    }
+}
+
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+private fun FullscreenViewer(
+    atts: List<Attachment>,
+    initialIndex: Int,
+    onDismiss: () -> Unit,
+) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        val pagerState = androidx.compose.foundation.pager.rememberPagerState(
+            initialPage = initialIndex,
+        ) { atts.size }
+        androidx.compose.foundation.pager.HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black),
+        ) { page ->
+            var scale by remember(page) { mutableStateOf(1f) }
+            var offset by remember(page) { mutableStateOf(Offset.Zero) }
+            val transformable = rememberTransformableState { zoom, pan, _ ->
+                scale = (scale * zoom).coerceIn(1f, 5f)
+                offset += pan
+            }
+            coil.compose.AsyncImage(
+                model = atts[page],
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(
+                        scaleX = scale, scaleY = scale,
+                        translationX = offset.x, translationY = offset.y,
+                    )
+                    .transformable(state = transformable),
+                contentScale = ContentScale.Fit,
+            )
         }
     }
 }
