@@ -1,3 +1,6 @@
+# Worktrees (subagent-driven development isolation)
+.worktrees/
+
 # Gradle files
 .gradle/
 build/
