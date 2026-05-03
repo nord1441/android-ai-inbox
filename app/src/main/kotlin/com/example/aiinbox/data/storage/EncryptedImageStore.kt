@@ -45,7 +45,13 @@ class EncryptedImageStore @Inject constructor(
             masterKey,
             EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB,
         ).build()
-        encrypted.openFileOutput().use { it.write(bytes) }
+        try {
+            encrypted.openFileOutput().use { it.write(bytes) }
+        } catch (t: Throwable) {
+            // 書き込み失敗時の orphan file を削除
+            runCatching { file.delete() }
+            throw t
+        }
         return name
     }
 
