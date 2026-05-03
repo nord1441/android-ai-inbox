@@ -1,5 +1,7 @@
 # 画像 / スクリーンショット取り込み 実装計画
 
+> **2026-05-03 修正:** 実機テストの結果、MediaProjection の同意ダイアログ繰り返しが UX 問題となり、Tasks 17-20 (BitmapToAttachmentPipeline / ScreenshotCaptureService / ScreenshotCaptureActivity / ScreenshotTileService) を削除し OS 標準のスクショ撮影 → シェアシート → 画像 Share 経路に合流する設計に変更しました。Task 1 から FOREGROUND_SERVICE_MEDIA_PROJECTION 権限も削除されています。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 既存の AI Inbox に「他アプリからの画像共有」と「アクションキー / Quick Settings からの即時スクリーンショット取り込み」を追加し、OCR を経由して既存の Gemma 4 要約パイプラインに合流させる。
@@ -2799,7 +2801,7 @@ git commit -m "feat(share): accept image/* via SEND and SEND_MULTIPLE intents"
 
 ---
 
-## Task 17: BitmapToAttachmentPipeline（共有ロジック）
+## **[REVERTED 2026-05-03]** Task 17: BitmapToAttachmentPipeline（共有ロジック）
 
 **Files:**
 - Create: `app/src/main/kotlin/com/example/aiinbox/screenshot/BitmapToAttachmentPipeline.kt`
@@ -2967,7 +2969,7 @@ git commit -m "feat(screenshot): add BitmapToAttachmentPipeline shared ingestion
 
 ---
 
-## Task 18: ScreenshotCaptureService（Foreground Service）
+## **[REVERTED 2026-05-03]** Task 18: ScreenshotCaptureService（Foreground Service）
 
 **Files:**
 - Create: `app/src/main/kotlin/com/example/aiinbox/screenshot/ScreenshotCaptureService.kt`
@@ -3239,7 +3241,7 @@ git commit -m "feat(screenshot): add ScreenshotCaptureService using MediaProject
 
 ---
 
-## Task 19: ScreenshotCaptureActivity（Launcher 別エントリ）
+## **[REVERTED 2026-05-03]** Task 19: ScreenshotCaptureActivity（Launcher 別エントリ）
 
 **Files:**
 - Create: `app/src/main/kotlin/com/example/aiinbox/screenshot/ScreenshotCaptureActivity.kt`
@@ -3356,7 +3358,7 @@ git commit -m "feat(screenshot): add launcher activity to trigger MediaProjectio
 
 ---
 
-## Task 20: ScreenshotTileService（Quick Settings タイル）
+## **[REVERTED 2026-05-03]** Task 20: ScreenshotTileService（Quick Settings タイル）
 
 **Files:**
 - Create: `app/src/main/kotlin/com/example/aiinbox/screenshot/ScreenshotTileService.kt`
