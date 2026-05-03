@@ -75,6 +75,19 @@ class InboxRepository @Inject constructor(
         dao.update(current.copy(status = ItemStatus.PROCESSING, updatedAt = System.currentTimeMillis()))
     }
 
+    suspend fun applyPlaceholderResult(id: String, attachmentCount: Int) {
+        val current = dao.getById(id) ?: return
+        dao.update(
+            current.copy(
+                title = current.title ?: "画像",
+                summary = current.summary ?: "<添付${attachmentCount}枚>",
+                status = ItemStatus.COMPLETED,
+                lastError = null,
+                updatedAt = System.currentTimeMillis(),
+            )
+        )
+    }
+
     suspend fun applySummarizeResult(id: String, result: SummarizeResult) {
         val current = dao.getById(id) ?: return
         val edited = current.userEditedFields

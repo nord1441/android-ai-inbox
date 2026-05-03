@@ -5,10 +5,12 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.example.aiinbox.data.repository.InboxRepository
+import com.example.aiinbox.data.storage.EncryptedImageStore
 import com.example.aiinbox.llm.ContentHintDetector
 import com.example.aiinbox.llm.LlmServiceClient
 import com.example.aiinbox.llm.ModelManager
 import com.example.aiinbox.notification.NotificationHelper
+import com.example.aiinbox.ocr.OcrEngine
 
 class TestSummarizeWorkerFactory(
     private val repo: InboxRepository,
@@ -16,6 +18,8 @@ class TestSummarizeWorkerFactory(
     private val modelManager: ModelManager,
     private val hintDetector: ContentHintDetector,
     private val notifier: NotificationHelper,
+    private val ocr: OcrEngine,
+    private val imageStore: EncryptedImageStore,
 ) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
@@ -23,7 +27,7 @@ class TestSummarizeWorkerFactory(
         workerParameters: WorkerParameters,
     ): ListenableWorker? = when (workerClassName) {
         SummarizeWorker::class.java.name ->
-            SummarizeWorker(appContext, workerParameters, repo, client, modelManager, hintDetector, notifier)
+            SummarizeWorker(appContext, workerParameters, repo, client, modelManager, hintDetector, notifier, ocr, imageStore)
         else -> null
     }
 }

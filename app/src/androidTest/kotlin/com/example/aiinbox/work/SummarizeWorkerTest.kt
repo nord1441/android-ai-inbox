@@ -17,6 +17,7 @@ import com.example.aiinbox.llm.ContentHintDetector
 import com.example.aiinbox.llm.LlmServiceClient
 import com.example.aiinbox.llm.ModelManager
 import com.example.aiinbox.notification.NotificationHelper
+import com.example.aiinbox.ocr.FakeOcrEngine
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -41,12 +42,14 @@ class SummarizeWorkerTest {
     private lateinit var repo: InboxRepository
     private lateinit var attachmentDir: java.io.File
 
+    private lateinit var store: com.example.aiinbox.data.storage.EncryptedImageStore
+
     @Before
     fun setup() {
         ctx.deleteDatabase("inbox.db")
         db = buildEncryptedDatabase(ctx, KeystorePassphraseProvider(ctx))
         attachmentDir = java.io.File(ctx.cacheDir, "attach-${this::class.java.simpleName}").apply { deleteRecursively(); mkdirs() }
-        val store = com.example.aiinbox.data.storage.EncryptedImageStore(ctx, attachmentDir)
+        store = com.example.aiinbox.data.storage.EncryptedImageStore(ctx, attachmentDir)
         repo = InboxRepository(db.inboxDao(), db.attachmentDao(), store)
 
         WorkManagerTestInitHelper.initializeTestWorkManager(
@@ -72,7 +75,7 @@ class SummarizeWorkerTest {
         val worker = TestListenableWorkerBuilder<SummarizeWorker>(ctx)
             .setInputData(Data.Builder().putString(SummarizeWorker.KEY_ITEM_ID, id).build())
             .setWorkerFactory(
-                TestSummarizeWorkerFactory(repo, client, modelManager, ContentHintDetector(), NotificationHelper(ctx))
+                TestSummarizeWorkerFactory(repo, client, modelManager, ContentHintDetector(), NotificationHelper(ctx), FakeOcrEngine(), store)
             )
             .build()
 
