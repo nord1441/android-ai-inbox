@@ -6,6 +6,8 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,10 +32,12 @@ class MlKitOcrEngine @Inject constructor() : OcrEngine {
         TextRecognition.getClient(JapaneseTextRecognizerOptions.Builder().build())
     }
 
-    override suspend fun recognize(bitmap: Bitmap): String {
+    override suspend fun recognize(bitmap: Bitmap): String = coroutineScope {
         val img = InputImage.fromBitmap(bitmap, /* rotation = */ 0)
-        val latinText = latin.process(img).await().text
-        val japaneseText = japanese.process(img).await().text
-        return if (japaneseText.length >= latinText.length) japaneseText else latinText
+        val latinDeferred = async { latin.process(img).await().text }
+        val japaneseDeferred = async { japanese.process(img).await().text }
+        val latinText = latinDeferred.await()
+        val japaneseText = japaneseDeferred.await()
+        if (japaneseText.length >= latinText.length) japaneseText else latinText
     }
 }
