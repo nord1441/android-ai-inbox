@@ -21,16 +21,19 @@ class InboxRepositoryTest {
     private val ctx = ApplicationProvider.getApplicationContext<android.content.Context>()
     private lateinit var db: AppDatabase
     private lateinit var repo: InboxRepository
+    private lateinit var attachmentDir: java.io.File
 
     @Before
     fun setup() {
         ctx.deleteDatabase("inbox.db")
         db = buildEncryptedDatabase(ctx, KeystorePassphraseProvider(ctx))
-        repo = InboxRepository(db.inboxDao())
+        attachmentDir = java.io.File(ctx.cacheDir, "attach-${this::class.java.simpleName}").apply { deleteRecursively(); mkdirs() }
+        val store = com.example.aiinbox.data.storage.EncryptedImageStore(ctx, attachmentDir)
+        repo = InboxRepository(db.inboxDao(), db.attachmentDao(), store)
     }
 
     @After
-    fun teardown() { db.close(); ctx.deleteDatabase("inbox.db") }
+    fun teardown() { db.close(); ctx.deleteDatabase("inbox.db"); attachmentDir.deleteRecursively() }
 
     @Test
     fun `createPendingItem returns id and stores PENDING`() = runBlocking {

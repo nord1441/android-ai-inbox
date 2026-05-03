@@ -1,8 +1,13 @@
 package com.example.aiinbox.data.repository
 
+import com.example.aiinbox.data.db.Attachment
+import com.example.aiinbox.data.db.AttachmentDao
+import com.example.aiinbox.data.db.AttachmentKind
 import com.example.aiinbox.data.db.InboxDao
 import com.example.aiinbox.data.db.InboxItem
+import com.example.aiinbox.data.db.InboxItemWithAttachments
 import com.example.aiinbox.data.db.ItemStatus
+import com.example.aiinbox.data.storage.EncryptedImageStore
 import com.example.aiinbox.llm.SummarizeResult
 import com.example.aiinbox.ui.inbox.InboxFilter
 import kotlinx.coroutines.flow.Flow
@@ -15,6 +20,8 @@ import javax.inject.Singleton
 @Singleton
 class InboxRepository @Inject constructor(
     private val dao: InboxDao,
+    private val attachmentDao: AttachmentDao,
+    private val imageStore: EncryptedImageStore,
 ) {
 
     fun observeAll(): Flow<List<InboxItem>> = dao.observeAll()
@@ -139,32 +146,36 @@ class InboxRepository @Inject constructor(
     }
 
     /**
-     * In-memory buffer for soft-deleted items. Holds the item between [softDelete]
-     * and [finalizeDelete] so [restoreDeleted] can undo the deletion within the
-     * Snackbar window. Process death between softDelete and finalizeDelete loses
-     * the buffer entry (the DAO row is already gone) — acceptable for a 5s undo UX.
+     * In-memory buffer for soft-deleted items (with their attachments). Holds full
+     * InboxItemWithAttachments between softDelete and finalizeDelete so restoreDeleted
+     * can recreate both the item row and its attachment rows. Files are kept on disk
+     * until finalizeDelete deletes them.
      */
-    private val deletedBuffer = ConcurrentHashMap<String, InboxItem>()
+    private val deletedBuffer = ConcurrentHashMap<String, InboxItemWithAttachments>()
 
     suspend fun softDelete(id: String): Boolean {
-        val item = dao.getById(id) ?: return false
-        deletedBuffer[id] = item
-        dao.deleteById(id)
+        val full = dao.getByIdWithAttachments(id) ?: return false
+        deletedBuffer[id] = full
+        dao.deleteById(id)  // CASCADE で attachments 行も消える
         return true
     }
 
     suspend fun restoreDeleted(id: String): Boolean {
-        val item = deletedBuffer.remove(id) ?: return false
-        dao.insert(item)
+        val full = deletedBuffer.remove(id) ?: return false
+        dao.insert(full.item)
+        attachmentDao.insertAll(full.attachments)
         return true
     }
 
     fun finalizeDelete(id: String) {
-        deletedBuffer.remove(id)
+        val full = deletedBuffer.remove(id) ?: return
+        full.attachments.forEach { imageStore.delete(it.encryptedFilename) }
     }
 
     suspend fun delete(id: String) {
+        val full = dao.getByIdWithAttachments(id)
         dao.deleteById(id)
+        full?.attachments?.forEach { imageStore.delete(it.encryptedFilename) }
     }
 
     suspend fun search(query: String): List<InboxItem> {
@@ -173,4 +184,78 @@ class InboxRepository @Inject constructor(
         val sanitized = query.replace("\"", "").let { "\"$it\"" }
         return dao.searchFts(sanitized)
     }
+
+    suspend fun createPendingItemWithAttachments(
+        text: String?,
+        subject: String?,
+        sourceApp: String?,
+        drafts: List<AttachmentDraft>,
+    ): String {
+        val now = System.currentTimeMillis()
+        val itemId = UUID.randomUUID().toString()
+        val item = InboxItem(
+            id = itemId,
+            originalText = text,
+            originalSubject = subject,
+            sourceApp = sourceApp,
+            receivedAt = now,
+            status = ItemStatus.PENDING,
+            updatedAt = now,
+        )
+        dao.insert(item)
+        val atts = drafts.mapIndexed { idx, d ->
+            Attachment(
+                id = UUID.randomUUID().toString(),
+                itemId = itemId,
+                ordering = idx,
+                kind = d.kind,
+                encryptedFilename = d.encryptedFilename,
+                mimeType = d.mimeType,
+                widthPx = d.widthPx,
+                heightPx = d.heightPx,
+                byteSize = d.byteSize,
+                createdAt = now,
+            )
+        }
+        attachmentDao.insertAll(atts)
+        return itemId
+    }
+
+    suspend fun getItemWithAttachments(id: String): InboxItemWithAttachments? =
+        dao.getByIdWithAttachments(id)
+
+    fun observeItemWithAttachments(id: String): Flow<InboxItemWithAttachments?> =
+        dao.observeByIdWithAttachments(id)
+
+    fun observeAllWithAttachments(): Flow<List<InboxItemWithAttachments>> =
+        dao.observeAllWithAttachments()
+
+    fun observeFilteredWithAttachments(filter: com.example.aiinbox.ui.inbox.InboxFilter): Flow<List<InboxItemWithAttachments>> {
+        val hasEventInt = if (filter.hasEventOnly) 1 else 0
+        val q = filter.query.trim()
+        val baseFlow = when {
+            q.isEmpty() -> dao.observeFilteredWithAttachments(hasEventInt)
+            q.length < 3 -> dao.observeSearchLikeWithAttachments("%$q%", hasEventInt)
+            else -> dao.observeSearchWithAttachments("\"${q.replace("\"", "")}\"", hasEventInt)
+        }
+        return baseFlow.map { list ->
+            list.filter { wrap ->
+                (filter.categories.isEmpty() || wrap.item.category in filter.categories) &&
+                    (filter.tags.isEmpty() || wrap.item.tags.any { it in filter.tags })
+            }
+        }
+    }
+
+    suspend fun updateAttachmentOcr(attachmentId: String, ocrText: String?) {
+        attachmentDao.updateOcr(attachmentId, ocrText, System.currentTimeMillis())
+    }
 }
+
+data class AttachmentDraft(
+    val kind: AttachmentKind,
+    val encryptedFilename: String,
+    val mimeType: String,
+    val widthPx: Int,
+    val heightPx: Int,
+    val byteSize: Long,
+)
