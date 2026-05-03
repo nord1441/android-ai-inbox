@@ -103,6 +103,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.litertlm.android)
+    implementation(libs.mlkit.text.recognition.latin)
+    implementation(libs.mlkit.text.recognition.japanese)
+    implementation(libs.coil.compose)
     implementation(libs.okhttp)
     testImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(libs.okhttp.mockwebserver)
