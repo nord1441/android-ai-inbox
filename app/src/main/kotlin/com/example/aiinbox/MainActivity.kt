@@ -55,6 +55,14 @@ class MainActivity : ComponentActivity() {
             syncCoordinator.setPeriodicInterval(interval)
         }
 
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "fs_tombstone_gc",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            androidx.work.PeriodicWorkRequestBuilder<com.example.aiinbox.work.FsTombstoneGcWorker>(
+                1, java.util.concurrent.TimeUnit.DAYS,
+            ).build(),
+        )
+
         val openItemId = intent.getStringExtra(NotificationHelper.EXTRA_OPEN_ITEM_ID)
 
         // Diagnostic: show what ModelManager is actually checking and finding.
