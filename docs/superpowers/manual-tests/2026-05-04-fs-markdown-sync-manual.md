@@ -1,70 +1,68 @@
-# Filesystem + Markdown Inbox sync — manual exercise
+# ファイルシステム + Markdown 同期 — 手動疎通テスト
 
-End-to-end checks against a real SAF folder synced by Syncthing
-between two devices. Walk these scenarios before declaring the
-feature shippable.
+Syncthing で実フォルダを共有した 2 台の Android 端末で、エンドツーエンドの
+動作確認を行う。本機能を「出荷可」とみなす前に、以下のシナリオを一通り
+歩くこと。
 
-## Setup
+## 事前準備
 
-- Two Android devices with the debug APK signed by the same
-  `debug.keystore`.
-- Syncthing installed and configured to share the same folder
-  between both devices (e.g. `/storage/emulated/0/Documents/Inbox`).
-- POST_NOTIFICATIONS granted (so the FGS / completion notifications
-  are visible — denial doesn't break sync, only its visibility).
-- Both devices have a model in `files/models/` (push via
-  `scripts/push-model.sh` if needed).
+- 同じ `debug.keystore` で署名された debug APK が入った Android 端末 2 台。
+- Syncthing をインストールし、両端末で同じフォルダを共有設定にしておく
+  （例: `/storage/emulated/0/Documents/Inbox`）。
+- POST_NOTIFICATIONS を許可（FGS や完了通知が表示されるようになる。
+  拒否しても同期動作自体は壊れず、可視性だけ落ちる）。
+- 両端末で `files/models/` にモデルが配置されていること。
+  必要なら `scripts/push-model.sh` で push する。
 
-After setup, on each device: Settings → 「同期フォルダを選ぶ」 →
-pick the Syncthing-shared folder.
+準備が整ったら、各端末で 設定 → 「同期フォルダを選ぶ」 → Syncthing が共有して
+いるフォルダを選択する。
 
-## Scenarios
+## シナリオ
 
-### A — First export
+### A — 初回エクスポート
 
-On device A, open the app and Settings → 「今すぐ同期」.
-Expect: in the Syncthing folder, a `2026-XX-XX-<id>.md` per existing
-inbox item plus an `attachments/` directory with binaries.
+端末 A でアプリを開き、設定 → 「今すぐ同期」 をタップ。
+期待: Syncthing 共有フォルダに、既存の inbox アイテムごとに
+`2026-XX-XX-<id>.md` が作成される。さらに `attachments/` ディレクトリに
+バイナリが配置される。
 
-### B — First import
+### B — 初回インポート
 
-On device B, open the app and Settings → 「今すぐ同期」 (this happens
-automatically on app launch but the manual button removes timing
-ambiguity).
-Expect: the items A exported appear in B's inbox list within seconds
-of Syncthing finishing its sync.
+端末 B でアプリを開き、設定 → 「今すぐ同期」 をタップ
+（アプリ起動時に自動同期も走るが、手動ボタンを使うとタイミングの
+曖昧さがなくなる）。
+期待: A がエクスポートしたアイテムが、Syncthing の同期完了から数秒以内に
+B の inbox 一覧に現れる。
 
-### C — Round-trip a new share
+### C — 新規共有のラウンドトリップ
 
-1. Device A: share an image to AI Inbox; wait for the completion
-   notification.
-2. Device A: confirm a new `.md` appeared in the synced folder.
-3. Wait for Syncthing to mirror to device B.
-4. Device B: open the app (which auto-syncs on launch).
-5. Expect: the new item with summary, tags, and image is in B's
-   inbox.
+1. 端末 A: 画像を AI Inbox に共有する。完了通知が出るまで待つ。
+2. 端末 A: 同期フォルダに新しい `.md` が出来ていることを確認。
+3. Syncthing が端末 B にミラーするのを待つ。
+4. 端末 B: アプリを開く（起動時に自動同期される）。
+5. 期待: 要約・タグ・画像が揃った新規アイテムが B の inbox に入っている。
 
-### D — Round-trip a delete
+### D — 削除のラウンドトリップ
 
-1. Device A: open the item, tap delete.
-2. Device A: confirm the corresponding `.md` is rewritten with
-   `status: DELETED` (open in any text editor / Obsidian).
-3. Device B: sync.
-4. Expect: the item disappears from B's inbox list.
+1. 端末 A: アイテムを開いて削除をタップ。
+2. 端末 A: 対応する `.md` が `status: DELETED` で書き直されていることを
+   確認（テキストエディタや Obsidian で開く）。
+3. 端末 B: 同期する。
+4. 期待: B の inbox 一覧からそのアイテムが消える。
 
-### E — External edit is ignored
+### E — 外部からの編集は無視される
 
-1. On device A, open one of the exported `.md` files in Obsidian.
-2. Change the body to "EDITED EXTERNALLY" and save.
-3. Device A: 「今すぐ同期」.
-4. Expect: A's inbox is unchanged. The `.md` may be overwritten back
-   to its previous body on the next export pass (we don't propagate
-   edits) — confirm via diff if you care to see this.
+1. 端末 A: エクスポート済みの `.md` を Obsidian で開く。
+2. 本文を "EDITED EXTERNALLY" に書き換えて保存。
+3. 端末 A: 「今すぐ同期」 をタップ。
+4. 期待: A の inbox は変わらない。本機能は外部編集を伝播しない仕様のため、
+   次回エクスポートで `.md` の本文が元の内容に上書き戻される可能性がある
+   （気になる場合は diff で確認）。
 
-### F — SAF permission revoked
+### F — SAF 権限が剥奪された場合
 
-1. On device A, system settings → AI Inbox → Permissions →
-   「ファイルとメディア」 → revoke.
-2. Open the app, Settings, 「今すぐ同期」.
-3. Expect: error state appears; 「フォルダを変更」 button is
-   available; re-picking restores function.
+1. 端末 A: システム設定 → AI Inbox → 権限 → 「ファイルとメディア」 →
+   許可を取り消す。
+2. アプリを開き、設定 → 「今すぐ同期」 をタップ。
+3. 期待: エラー状態が表示される。「フォルダを変更」ボタンが押せる状態に
+   あり、再選択で機能が復帰する。
