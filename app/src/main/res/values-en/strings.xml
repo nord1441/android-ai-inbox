@@ -48,4 +48,16 @@
     <string name="settings_variant_none">Not downloaded</string>
     <string name="settings_back">Back</string>
     <string name="detail_no_original">(no body text)</string>
+    <string name="settings_fs_sync_section">Local / external Markdown sync</string>
+    <string name="settings_fs_sync_unconfigured">Sync folder not configured</string>
+    <string name="settings_fs_sync_pick_folder">Pick sync folder</string>
+    <string name="settings_fs_sync_change_folder">Change folder</string>
+    <string name="settings_fs_sync_clear_folder">Disable sync</string>
+    <string name="settings_fs_sync_folder">Folder: %1$s</string>
+    <string name="settings_fs_sync_status_idle">Idle</string>
+    <string name="settings_fs_sync_status_running">Syncing…</string>
+    <string name="settings_fs_sync_status_error">Error: %1$s</string>
+    <string name="settings_fs_sync_last_sync">Last sync: %1$s</string>
+    <string name="settings_fs_sync_now">Sync now</string>
+    <string name="settings_fs_sync_interval_label">Interval: %1$s</string>
 </resources>
