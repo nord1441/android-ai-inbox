@@ -5,6 +5,7 @@ import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
 import com.example.aiinbox.data.db.AppDatabase
 import com.example.aiinbox.data.db.AttachmentDao
 import com.example.aiinbox.data.db.InboxDao
+import com.example.aiinbox.data.db.SyncStateDao
 import com.example.aiinbox.data.db.buildEncryptedDatabase
 import dagger.Module
 import dagger.Provides
@@ -35,4 +36,7 @@ object DatabaseModule {
 
     @Provides
     fun provideAttachmentDao(db: AppDatabase): AttachmentDao = db.attachmentDao()
+
+    @Provides
+    fun provideSyncStateDao(db: AppDatabase): SyncStateDao = db.syncStateDao()
 }

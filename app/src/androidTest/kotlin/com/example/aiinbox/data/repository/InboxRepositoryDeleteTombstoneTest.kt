@@ -29,7 +29,7 @@ class InboxRepositoryDeleteTombstoneTest {
     @Before fun setup() = hilt.inject()
 
     @Test
-    fun delete_setsTombstoneAndErasesFile_butKeepsRow() = runBlocking {
+    fun softDeleteThenFinalize_setsTombstoneAndErasesFile_butKeepsRow() = runBlocking {
         // Arrange: create an item with one attachment via the test helper.
         val id = repository.createTestItemWithAttachment(
             text = "hello",
@@ -40,8 +40,9 @@ class InboxRepositoryDeleteTombstoneTest {
         val encName = attBefore.first().encryptedFilename
         assertNotNull(imageStore.read(encName))
 
-        // Act
-        repository.delete(id)
+        // Act: full delete cycle without the undo path = softDelete then finalize.
+        repository.softDelete(id)
+        repository.finalizeDelete(id)
 
         // Assert: row exists with deleted_at set; file is gone; observable lists are empty.
         val row = db.inboxDao().getById(id)

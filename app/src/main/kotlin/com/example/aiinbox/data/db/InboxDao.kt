@@ -31,10 +31,15 @@ interface InboxDao {
     @Query("DELETE FROM inbox_items WHERE id = :id")
     suspend fun deleteById(id: String)
 
+    /**
+     * Admin / sync / test point-lookup that returns even tombstoned rows.
+     * Production UI flows must use [observeById] or
+     * [observeByIdWithAttachments] which filter `deleted_at IS NULL`.
+     */
     @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
     suspend fun getById(id: String): InboxItem?
 
-    @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM inbox_items WHERE id = :id AND deleted_at IS NULL LIMIT 1")
     fun observeById(id: String): Flow<InboxItem?>
 
     @Query("SELECT * FROM inbox_items WHERE deleted_at IS NULL ORDER BY received_at DESC")
@@ -118,13 +123,14 @@ interface InboxDao {
     fun observeSearchLike(pattern: String, hasEventOnly: Int): Flow<List<InboxItem>>
 
     @Transaction
-    @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM inbox_items WHERE id = :id AND deleted_at IS NULL LIMIT 1")
     suspend fun getByIdWithAttachments(id: String): InboxItemWithAttachments?
 
     /**
-     * Sync-only point lookup that returns even tombstoned rows. Drive sync
+     * Sync / GC point lookup that returns even tombstoned rows. Drive sync
      * needs to read deleted_at-set rows so it can publish their tombstones
-     * to the manifest.
+     * to the manifest, and the GC worker needs to enumerate attachments
+     * for purging.
      */
     @Transaction
     @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
@@ -143,7 +149,7 @@ interface InboxDao {
     suspend fun markSynced(ids: List<String>, syncedAt: Long)
 
     @Transaction
-    @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
+    @Query("SELECT * FROM inbox_items WHERE id = :id AND deleted_at IS NULL LIMIT 1")
     fun observeByIdWithAttachments(id: String): Flow<InboxItemWithAttachments?>
 
     @Transaction
@@ -210,6 +216,10 @@ interface InboxDao {
 
     @Query("UPDATE inbox_items SET deleted_at = :deletedAt, updated_at = :deletedAt WHERE id = :id")
     suspend fun markDeleted(id: String, deletedAt: Long)
+
+    /** Reverse of [markDeleted]: clears the tombstone and refreshes updated_at so LWW sees the restore as the latest mutation. */
+    @Query("UPDATE inbox_items SET deleted_at = NULL, updated_at = :restoredAt WHERE id = :id")
+    suspend fun restore(id: String, restoredAt: Long)
 
     /** GC: tombstone rows whose deleted_at is older than [cutoff] (epoch ms). */
     @Query("SELECT * FROM inbox_items WHERE deleted_at IS NOT NULL AND deleted_at < :cutoff")

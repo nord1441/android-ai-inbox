@@ -64,9 +64,9 @@ class DriveApiClientTest {
         server.enqueue(MockResponse().setResponseCode(401))
         try {
             client.downloadBytes("file-id-3")
-            error("expected IllegalStateException")
-        } catch (e: IllegalStateException) {
-            assertEquals("auth required", e.message)
+            error("expected DriveAuthRequiredException")
+        } catch (e: DriveAuthRequiredException) {
+            // expected
         }
         Unit
     }

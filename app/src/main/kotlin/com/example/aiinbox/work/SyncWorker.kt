@@ -9,6 +9,7 @@ import com.example.aiinbox.data.db.SyncStateEntity
 import com.example.aiinbox.data.repository.InboxRepository
 import com.example.aiinbox.sync.DriveApiClient
 import com.example.aiinbox.sync.DriveAuthRepository
+import com.example.aiinbox.sync.DriveAuthRequiredException
 import com.example.aiinbox.sync.SyncEngine
 import com.example.aiinbox.sync.SyncManifest
 import com.example.aiinbox.sync.SyncState
@@ -60,30 +61,48 @@ class SyncWorker @AssistedInject constructor(
             val state = syncStateDao.get()
             val manifestFile = api.findFileByName(MANIFEST_NAME)
 
-            // Pull manifest. 304 → treat remote as unchanged; we still walk
-            // local for push candidates and re-publish the manifest so our
-            // last_synced stamps are accurate.
-            val remoteItems: List<SyncManifest.ManifestItem> = when {
+            // Pull manifest with conditional GET. 304 means remote is byte-for-byte
+            // unchanged since we last published — we already pushed everything
+            // local on that earlier run, so there is nothing to do this round.
+            val remoteItems: List<SyncManifest.ManifestItem>? = when {
                 manifestFile == null -> emptyList()
                 else -> when (
                     val r = api.downloadBytes(manifestFile.id, ifNoneMatchEtag = state?.lastManifestEtag)
                 ) {
-                    DriveApiClient.DownloadResult.NotModified -> emptyList()
+                    DriveApiClient.DownloadResult.NotModified -> null
                     is DriveApiClient.DownloadResult.Body ->
                         json.decodeFromString(SyncManifest.serializer(), r.bytes.decodeToString()).items
                 }
             }
 
+            val now = System.currentTimeMillis()
+            if (remoteItems == null) {
+                // 304 fast path: stamp last_full_sync_at and bail.
+                syncStateDao.upsert(
+                    (state ?: SyncStateEntity()).copy(
+                        accountEmail = state?.accountEmail ?: authRepository.currentEmail(),
+                        lastFullSyncAt = now,
+                    )
+                )
+                syncStateRepository.setIdle()
+                return Result.success()
+            }
+
             val localRefs = repository.allLocalRefs()
             val diff = SyncEngine.diff(localRefs, remoteItems)
 
-            // One Drive list call to dereference filenames → file ids for pulls.
-            val fileIdLookup = if (diff.pull.isNotEmpty()) api.listAllFileNamesAndIds() else emptyMap()
-            engine.applyPull(diff.pull, fileIdLookup)
-            engine.applyPush(diff.push)
+            // One Drive list call serves both pull (dereference filenames →
+            // file ids) and push (find-vs-create + size compare). Skip the
+            // call if neither side has work to do.
+            val fileLookup = if (diff.pull.isNotEmpty() || diff.push.isNotEmpty()) {
+                api.listAllFiles()
+            } else {
+                emptyMap()
+            }
+            engine.applyPull(diff.pull, fileLookup)
+            engine.applyPush(diff.push, fileLookup)
 
             // Re-publish manifest with post-sync state.
-            val now = System.currentTimeMillis()
             val newManifest = engine.buildManifest(now)
             val manifestBytes = json.encodeToString(SyncManifest.serializer(), newManifest).encodeToByteArray()
             val newMeta = if (manifestFile == null) {
@@ -98,9 +117,9 @@ class SyncWorker @AssistedInject constructor(
                     accountEmail = state?.accountEmail ?: authRepository.currentEmail(),
                     lastFullSyncAt = now,
                     // findFileByName / createFile / updateFileBytes don't return
-                    // an HTTP ETag (they hit the metadata endpoint). For now we
-                    // leave the ETag as-is — the next manifest pull will get a
-                    // 200 with body and refresh the ETag from the GET response.
+                    // an HTTP ETag (they hit the metadata endpoint). The next
+                    // manifest pull will get a 200 with body and refresh the
+                    // ETag from the GET response.
                     lastManifestEtag = newMeta.etag ?: state?.lastManifestEtag,
                 )
             )
@@ -108,13 +127,13 @@ class SyncWorker @AssistedInject constructor(
 
             syncStateRepository.setIdle()
             return Result.success()
+        } catch (e: DriveAuthRequiredException) {
+            android.util.Log.w(TAG, "Drive token rejected; user re-link required", e)
+            syncStateRepository.setError(SyncState.Cause.ReauthRequired, "再リンクしてください")
+            return Result.failure()
         } catch (t: Throwable) {
             android.util.Log.e(TAG, "sync failed", t)
-            val cause = when (t.message) {
-                "auth required" -> SyncState.Cause.ReauthRequired
-                else -> SyncState.Cause.Other
-            }
-            syncStateRepository.setError(cause, t.message)
+            syncStateRepository.setError(SyncState.Cause.Other, t.message)
             return Result.retry()
         }
     }

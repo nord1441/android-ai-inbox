@@ -9,6 +9,7 @@ import com.example.aiinbox.data.db.InboxDao
 import com.example.aiinbox.data.storage.EncryptedImageStore
 import com.example.aiinbox.sync.DriveApiClient
 import com.example.aiinbox.sync.DriveAuthRepository
+import com.example.aiinbox.sync.DriveAuthRequiredException
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -46,13 +47,18 @@ class TombstoneGcWorker @AssistedInject constructor(
 
             if (linked) {
                 // Best-effort remote cleanup; never let Drive errors block
-                // the local purge.
-                runCatching {
+                // the local purge. Auth-required is treated as "skip remote
+                // for this row" rather than aborting the whole worker —
+                // SyncWorker will surface the reauth UI on the user's next
+                // explicit sync action.
+                try {
                     api.findFileByName("items/${row.id}.json")?.let { api.deleteFile(it.id) }
                     attachments.forEach { att ->
                         api.findFileByName("attachments/${att.id}.bin")?.let { api.deleteFile(it.id) }
                     }
-                }.onFailure { t ->
+                } catch (e: DriveAuthRequiredException) {
+                    android.util.Log.w(TAG, "Drive auth required during GC; skipping remote cleanup", e)
+                } catch (t: Throwable) {
                     android.util.Log.w(TAG, "remote GC failed for item ${row.id}", t)
                 }
             }

@@ -9,6 +9,8 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.aiinbox.BuildConfig
+import com.example.aiinbox.data.db.SyncStateDao
+import com.example.aiinbox.data.db.SyncStateEntity
 import com.example.aiinbox.llm.ModelManager
 import com.example.aiinbox.llm.RamDetector
 import com.example.aiinbox.sync.DriveAuthRepository
@@ -38,6 +40,7 @@ class SettingsViewModel @Inject constructor(
     private val driveAuthRepository: DriveAuthRepository,
     private val syncStateRepository: SyncStateRepository,
     private val syncCoordinator: SyncCoordinator,
+    private val syncStateDao: SyncStateDao,
 ) : AndroidViewModel(application) {
 
     private val prefs = application.getSharedPreferences(PREFS_FILE, android.content.Context.MODE_PRIVATE)
@@ -133,8 +136,24 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onUnlinkDriveClicked() {
-        driveAuthRepository.unlink()
-        _state.update { it.copy(driveAccountEmail = null, driveLinkError = null) }
+        viewModelScope.launch {
+            driveAuthRepository.unlink()
+            // Stop the periodic worker so the device doesn't keep waking
+            // and short-circuiting on every interval.
+            syncCoordinator.setPeriodicInterval(null)
+            // Clear the persistent sync_state so the row doesn't surface a
+            // stale account email if the user re-links to a different
+            // account before the next successful sync overwrites it.
+            syncStateDao.upsert(
+                SyncStateEntity(
+                    id = 1,
+                    accountEmail = null,
+                    lastFullSyncAt = null,
+                    lastManifestEtag = null,
+                )
+            )
+            _state.update { it.copy(driveAccountEmail = null, driveLinkError = null) }
+        }
     }
 
     fun onSyncNowClicked() {

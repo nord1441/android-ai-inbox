@@ -43,21 +43,28 @@ class SyncEngine @Inject constructor(
     )
 
     /**
-     * Pull and apply each id in [idsToPull]. [fileIdLookup] maps the wire-format
+     * Pull and apply each id in [idsToPull]. [fileLookup] maps the wire-format
      * filename (`items/{id}.json` and `attachments/{att_id}.bin`) to the Drive
-     * file id, populated upstream by the SyncWorker via a single Drive list call.
+     * file metadata, populated upstream by the SyncWorker via a single Drive
+     * list call.
      */
-    suspend fun applyPull(idsToPull: List<String>, fileIdLookup: Map<String, String>) {
+    suspend fun applyPull(idsToPull: List<String>, fileLookup: Map<String, DriveApiClient.FileMetadata>) {
         for (id in idsToPull) {
-            val itemFileId = fileIdLookup["items/$id.json"] ?: continue
-            val body = api.downloadBytes(itemFileId) as? DriveApiClient.DownloadResult.Body
+            val itemFile = fileLookup["items/$id.json"] ?: continue
+            val body = api.downloadBytes(itemFile.id) as? DriveApiClient.DownloadResult.Body
                 ?: continue
             val env = json.decodeFromString(SyncEnvelope.serializer(), body.bytes.decodeToString())
             repository.upsertFromSync(env)
             for (att in env.attachments) {
-                if (att.deletedAt != null) continue
-                val attFileId = fileIdLookup["attachments/${att.id}.bin"] ?: continue
-                val attBody = api.downloadBytes(attFileId) as? DriveApiClient.DownloadResult.Body
+                if (att.deletedAt != null) {
+                    // Remote tombstoned this attachment — purge its local
+                    // encrypted file (the row's deleted_at was already set
+                    // by upsertFromSync, but file bytes need explicit cleanup).
+                    runCatching { imageStore.delete(att.encryptedFilename) }
+                    continue
+                }
+                val attFile = fileLookup["attachments/${att.id}.bin"] ?: continue
+                val attBody = api.downloadBytes(attFile.id) as? DriveApiClient.DownloadResult.Body
                     ?: continue
                 imageStore.writeWithName(att.encryptedFilename, attBody.bytes)
             }
@@ -87,14 +94,16 @@ class SyncEngine @Inject constructor(
     /**
      * Push each id in [idsToPush]: upload the envelope JSON (creating or
      * updating per existing file presence) and any non-tombstoned attachment
-     * binaries whose remote size differs from the local bytes.
+     * binaries whose remote size differs from the local bytes. The
+     * [fileLookup] is the same one applyPull received, so we don't re-issue
+     * a findFileByName per id / per attachment.
      */
-    suspend fun applyPush(idsToPush: List<String>) {
+    suspend fun applyPush(idsToPush: List<String>, fileLookup: Map<String, DriveApiClient.FileMetadata>) {
         for (id in idsToPush) {
             val full = repository.getEnvelope(id) ?: continue
             val itemBytes = json.encodeToString(SyncEnvelope.serializer(), full).encodeToByteArray()
             val itemName = "items/$id.json"
-            val existing = api.findFileByName(itemName)
+            val existing = fileLookup[itemName]
             if (existing == null) {
                 api.createFile(itemName, itemBytes, "application/json")
             } else {
@@ -103,7 +112,7 @@ class SyncEngine @Inject constructor(
             for (att in full.attachments.filter { it.deletedAt == null }) {
                 val attName = "attachments/${att.id}.bin"
                 val attBytes = imageStore.readBytes(att.encryptedFilename) ?: continue
-                val existingAtt = api.findFileByName(attName)
+                val existingAtt = fileLookup[attName]
                 if (existingAtt == null) {
                     api.createFile(attName, attBytes, att.mimeType)
                 } else if (existingAtt.size != attBytes.size.toLong()) {

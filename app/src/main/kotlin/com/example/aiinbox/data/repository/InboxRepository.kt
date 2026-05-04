@@ -18,7 +18,6 @@ import com.example.aiinbox.ui.inbox.InboxFilter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -164,40 +163,48 @@ class InboxRepository @Inject constructor(
     }
 
     /**
-     * In-memory buffer for soft-deleted items (with their attachments). Holds full
-     * InboxItemWithAttachments between softDelete and finalizeDelete so restoreDeleted
-     * can recreate both the item row and its attachment rows. Files are kept on disk
-     * until finalizeDelete deletes them.
+     * Tombstone the item so that:
+     * (a) it disappears from every UI / search query (which all filter
+     *     `deleted_at IS NULL`),
+     * (b) Drive sync sees `deleted_at` set on the next manifest publish
+     *     and propagates the deletion to other devices.
+     *
+     * Encrypted attachment files are kept on disk so [restoreDeleted] can
+     * undo the operation; [finalizeDelete] purges them after the undo
+     * window closes.
      */
-    private val deletedBuffer = ConcurrentHashMap<String, InboxItemWithAttachments>()
-
     suspend fun softDelete(id: String): Boolean {
-        val full = dao.getByIdWithAttachments(id) ?: return false
-        deletedBuffer[id] = full
-        dao.deleteById(id)  // CASCADE で attachments 行も消える
-        return true
-    }
-
-    suspend fun restoreDeleted(id: String): Boolean {
-        val full = deletedBuffer.remove(id) ?: return false
-        dao.insert(full.item)
-        attachmentDao.insertAll(full.attachments)
-        return true
-    }
-
-    fun finalizeDelete(id: String) {
-        val full = deletedBuffer.remove(id) ?: return
-        full.attachments.forEach { imageStore.delete(it.encryptedFilename) }
-    }
-
-    suspend fun delete(id: String) {
+        val current = dao.getById(id) ?: return false
+        if (current.deletedAt != null) return false  // already tombstoned
         val now = System.currentTimeMillis()
-        val full = dao.getByIdWithAttachments(id)
-        // Erase encrypted bytes immediately — no point keeping them locally.
-        // The deleted_at flag carries delete intent into Drive sync.
-        full?.attachments?.forEach { imageStore.delete(it.encryptedFilename) }
         attachmentDao.markDeletedForItem(id, now)
         dao.markDeleted(id, now)
+        return true
+    }
+
+    /**
+     * Reverse [softDelete] by clearing the tombstone within the undo
+     * window. Drive sync will see the new `updated_at` on the next run
+     * and propagate the restore to other devices via LWW.
+     */
+    suspend fun restoreDeleted(id: String): Boolean {
+        val full = dao.getWithAttachmentsIncludingDeleted(id) ?: return false
+        if (full.item.deletedAt == null) return false
+        val now = System.currentTimeMillis()
+        attachmentDao.restoreForItem(id)
+        dao.restore(id, now)
+        return true
+    }
+
+    /**
+     * Erase the encrypted attachment files for a tombstoned item once the
+     * undo window has closed. The DB rows stay — they are physically
+     * removed by [TombstoneGcWorker] after 30 days so the tombstone has
+     * time to propagate via Drive.
+     */
+    suspend fun finalizeDelete(id: String) {
+        val full = dao.getWithAttachmentsIncludingDeleted(id) ?: return
+        full.attachments.forEach { imageStore.delete(it.encryptedFilename) }
     }
 
     suspend fun search(query: String): List<InboxItem> {

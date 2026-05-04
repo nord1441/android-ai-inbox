@@ -11,6 +11,7 @@ import com.example.aiinbox.llm.LlmServiceClient
 import com.example.aiinbox.llm.ModelManager
 import com.example.aiinbox.notification.NotificationHelper
 import com.example.aiinbox.ocr.OcrEngine
+import com.example.aiinbox.sync.SyncCoordinator
 
 class TestSummarizeWorkerFactory(
     private val repo: InboxRepository,
@@ -20,6 +21,7 @@ class TestSummarizeWorkerFactory(
     private val notifier: NotificationHelper,
     private val ocr: OcrEngine,
     private val imageStore: EncryptedImageStore,
+    private val syncCoordinator: SyncCoordinator,
 ) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
@@ -27,7 +29,10 @@ class TestSummarizeWorkerFactory(
         workerParameters: WorkerParameters,
     ): ListenableWorker? = when (workerClassName) {
         SummarizeWorker::class.java.name ->
-            SummarizeWorker(appContext, workerParameters, repo, client, modelManager, hintDetector, notifier, ocr, imageStore)
+            SummarizeWorker(
+                appContext, workerParameters, repo, client, modelManager,
+                hintDetector, notifier, ocr, imageStore, syncCoordinator,
+            )
         else -> null
     }
 }

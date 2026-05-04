@@ -49,7 +49,7 @@ class DriveApiClient @Inject constructor(
             .build()
         return client.newCall(req).executeSuspending().use { resp ->
             when {
-                resp.code == 401 -> error("auth required")
+                resp.code == 401 -> throw DriveAuthRequiredException()
                 resp.code !in 200..299 -> error("Drive list failed: ${resp.code} ${resp.message}")
                 else -> {
                     val body = resp.body!!.string()
@@ -70,19 +70,20 @@ class DriveApiClient @Inject constructor(
 
     /**
      * List every file in the appDataFolder spaces. Used by SyncWorker to build
-     * a name → fileId lookup so applyPull can dereference items/X.json and
-     * attachments/X.bin without one find call per file.
+     * a name → metadata lookup so both applyPull (dereference items/X.json
+     * and attachments/X.bin) and applyPush (find vs. create + size compare)
+     * can run from one Drive list call.
      *
      * Iterates pageToken until the server reports no nextPageToken.
      */
-    suspend fun listAllFileNamesAndIds(): Map<String, String> {
-        val out = mutableMapOf<String, String>()
+    suspend fun listAllFiles(): Map<String, FileMetadata> {
+        val out = mutableMapOf<String, FileMetadata>()
         var pageToken: String? = null
         do {
             val url = baseUrl.newBuilder()
                 .addPathSegments("drive/v3/files")
                 .addQueryParameter("spaces", "appDataFolder")
-                .addQueryParameter("fields", "nextPageToken,files(id,name)")
+                .addQueryParameter("fields", "nextPageToken,files(id,name,size)")
                 .addQueryParameter("pageSize", "1000")
                 .apply { pageToken?.let { addQueryParameter("pageToken", it) } }
                 .build()
@@ -93,13 +94,19 @@ class DriveApiClient @Inject constructor(
                 .build()
             pageToken = client.newCall(req).executeSuspending().use { resp ->
                 when {
-                    resp.code == 401 -> error("auth required")
+                    resp.code == 401 -> throw DriveAuthRequiredException()
                     resp.code !in 200..299 -> error("Drive list failed: ${resp.code} ${resp.message}")
                     else -> {
                         val root = json.parseToJsonElement(resp.body!!.string()).jsonObject
                         root["files"]?.jsonArray?.forEach { el ->
                             val obj = el.jsonObject
-                            out[obj["name"]!!.jsonPrimitive.content] = obj["id"]!!.jsonPrimitive.content
+                            val name = obj["name"]!!.jsonPrimitive.content
+                            out[name] = FileMetadata(
+                                id = obj["id"]!!.jsonPrimitive.content,
+                                name = name,
+                                size = obj["size"]?.jsonPrimitive?.longOrNull,
+                                etag = null,
+                            )
                         }
                         root["nextPageToken"]?.jsonPrimitive?.content
                     }
@@ -128,7 +135,7 @@ class DriveApiClient @Inject constructor(
                     val bytes = resp.body!!.bytes()
                     DownloadResult.Body(bytes, resp.header("ETag"))
                 }
-                401 -> error("auth required")
+                401 -> throw DriveAuthRequiredException()
                 else -> error("Drive download failed: ${resp.code} ${resp.message}")
             }
         }
@@ -154,7 +161,7 @@ class DriveApiClient @Inject constructor(
             .build()
         return client.newCall(req).executeSuspending().use { resp ->
             when {
-                resp.code == 401 -> error("auth required")
+                resp.code == 401 -> throw DriveAuthRequiredException()
                 resp.code !in 200..299 -> error("Drive create failed: ${resp.code} ${resp.message}")
                 else -> parseFileMetadata(resp.body!!.string())
             }
@@ -175,7 +182,7 @@ class DriveApiClient @Inject constructor(
             .build()
         return client.newCall(req).executeSuspending().use { resp ->
             when {
-                resp.code == 401 -> error("auth required")
+                resp.code == 401 -> throw DriveAuthRequiredException()
                 resp.code !in 200..299 -> error("Drive update failed: ${resp.code} ${resp.message}")
                 else -> parseFileMetadata(resp.body!!.string())
             }
@@ -195,7 +202,7 @@ class DriveApiClient @Inject constructor(
         client.newCall(req).executeSuspending().use { resp ->
             when {
                 resp.code == 204 -> Unit
-                resp.code == 401 -> error("auth required")
+                resp.code == 401 -> throw DriveAuthRequiredException()
                 else -> error("Drive delete failed: ${resp.code} ${resp.message}")
             }
         }
@@ -214,6 +221,13 @@ class DriveApiClient @Inject constructor(
         )
     }
 }
+
+/**
+ * Thrown by [DriveApiClient] on HTTP 401. Caller (typically [SyncWorker])
+ * is expected to translate this into [SyncState.Cause.ReauthRequired]
+ * and stop retrying — refresh isn't possible without a re-link in v1.
+ */
+class DriveAuthRequiredException : Exception("Drive access token rejected; user re-link required")
 
 private suspend fun okhttp3.Call.executeSuspending(): okhttp3.Response =
     suspendCancellableCoroutine { cont ->

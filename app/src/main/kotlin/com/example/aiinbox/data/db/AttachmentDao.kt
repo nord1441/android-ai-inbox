@@ -41,6 +41,10 @@ interface AttachmentDao {
     @Query("UPDATE attachments SET deleted_at = :deletedAt WHERE item_id = :itemId")
     suspend fun markDeletedForItem(itemId: String, deletedAt: Long)
 
+    /** Reverse of [markDeletedForItem]: clears tombstones for all attachments of an item. */
+    @Query("UPDATE attachments SET deleted_at = NULL WHERE item_id = :itemId")
+    suspend fun restoreForItem(itemId: String)
+
     /** GC: physically remove all attachment rows for an item. */
     @Query("DELETE FROM attachments WHERE item_id = :itemId")
     suspend fun physicalDeleteForItem(itemId: String)
