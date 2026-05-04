@@ -32,11 +32,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -71,9 +76,27 @@ fun InboxScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(padding),
         ) {
+            var fieldValue by remember { mutableStateOf(TextFieldValue(state.filter.query)) }
+            // Re-sync if the query is reset from outside the field (e.g. a future
+            // clear-filter button). Cheap to keep here even before such a button
+            // exists — it's the seam that makes adding one trivial.
+            LaunchedEffect(state.filter.query) {
+                if (state.filter.query != fieldValue.text) {
+                    fieldValue = fieldValue.copy(text = state.filter.query)
+                }
+            }
             OutlinedTextField(
-                value = state.filter.query,
-                onValueChange = viewModel::onQueryChanged,
+                value = fieldValue,
+                onValueChange = { newValue ->
+                    fieldValue = newValue
+                    // Only forward to the search backend once the IME has no
+                    // unconfirmed composition range. ASCII typing leaves
+                    // composition == null on every keystroke so real-time search
+                    // for English is preserved.
+                    if (newValue.composition == null) {
+                        viewModel.onQueryChanged(newValue.text)
+                    }
+                },
                 placeholder = { Text(stringResource(R.string.inbox_search_placeholder)) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 singleLine = true,
