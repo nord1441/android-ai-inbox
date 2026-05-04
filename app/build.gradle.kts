@@ -112,6 +112,11 @@ dependencies {
     testImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(libs.okhttp.mockwebserver)
 
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.google.id)
+    implementation(libs.play.services.auth)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)
