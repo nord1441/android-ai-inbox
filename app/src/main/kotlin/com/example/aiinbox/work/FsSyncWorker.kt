@@ -9,6 +9,7 @@ import com.example.aiinbox.data.db.FsSyncStateEntity
 import com.example.aiinbox.sync.FsSyncEngine
 import com.example.aiinbox.sync.FsSyncFolderStore
 import com.example.aiinbox.sync.FsSyncStateRepository
+import com.example.aiinbox.sync.SafFolderAccess
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -44,7 +45,12 @@ class FsSyncWorker @AssistedInject constructor(
         } catch (t: Throwable) {
             android.util.Log.e(TAG, "sync failed", t)
             syncStateRepository.setError(t.message)
-            return Result.retry()
+            // Permanent SAF errors (revoked grant, deleted tree) won't recover
+            // by retrying — let the user re-pick the folder. Transient I/O
+            // (mid-Syncthing-write, file lock) is worth a backoff-retry.
+            val isPermanent = t is SafFolderAccess.SafAccessException ||
+                t is SecurityException
+            return if (isPermanent) Result.failure() else Result.retry()
         }
     }
 

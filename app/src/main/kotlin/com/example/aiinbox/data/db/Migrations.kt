@@ -4,6 +4,17 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
+ * **マイグレーションポリシー (pre-release):**
+ *
+ * v2 → v3 以降の `Migration` は意図的に書かれていない。本アプリは個人開発の
+ * pre-release 段階で、ユーザは開発者本人のみ。スキーマ変更時の復旧手段は
+ * 「アプリを再インストール」とする方針が確認済み。
+ *
+ * 一般公開フェーズに入った時点で、本ファイルに `MIGRATION_2_3` 以降を
+ * 追加しつつ `AppDatabase` の `fallbackToDestructiveMigration` を見直すこと。
+ */
+
+/**
  * v1 → v2 マイグレーション。
  *
  * 変更内容:

@@ -100,24 +100,43 @@ class FsSyncEngine @Inject constructor(
         val parsed = importer.parse(saf.readBytes(remote.doc)) as? MarkdownImporter.ParseResult.Success ?: return
         val env = parsed.envelope
         val item = envelopeToItem(env, parsed.summaryBody)
-        val attachments = mutableListOf<Attachment>()
-        for (envAtt in env.attachments) {
-            val attBytes = runCatching {
-                val attDir = saf.attachmentsDir(treeUri)
+
+        // Pre-resolve every attachment binary BEFORE writing anything. If any
+        // file is missing (e.g. Syncthing has mirrored the .md but not the
+        // binaries yet), bail out so the row isn't inserted with a partial
+        // attachment list — next periodic sync will retry.
+        val resolved = mutableListOf<Pair<MarkdownEnvelope.EnvelopeAttachment, ByteArray>>()
+        if (env.attachments.isNotEmpty()) {
+            val attDir = runCatching { saf.attachmentsDir(treeUri) }.getOrNull()
+            if (attDir == null) {
+                android.util.Log.w(TAG, "import skipped for ${env.id}: cannot access attachments/")
+                return
+            }
+            val byName = attDir.listFiles().associateBy { it.name }
+            for (envAtt in env.attachments) {
                 val ext = envAtt.file.substringAfterLast('.', "bin")
-                val attDoc = attDir.listFiles().firstOrNull { it.name == "${envAtt.id}.$ext" }
-                    ?: return@runCatching null
-                saf.readBytes(attDoc)
-            }.getOrNull() ?: continue
-            // Re-encrypt locally with the receiving device's master key, under
-            // the same encrypted filename the envelope refers to so the
-            // attachments DB row matches.
-            val encName = envAtt.id + ".jpg.enc"
+                val doc = byName["${envAtt.id}.$ext"]
+                if (doc == null) {
+                    android.util.Log.w(TAG, "import deferred for ${env.id}: missing attachment ${envAtt.id}.$ext")
+                    return
+                }
+                val bytes = runCatching { saf.readBytes(doc) }.getOrNull()
+                if (bytes == null) {
+                    android.util.Log.w(TAG, "import deferred for ${env.id}: cannot read ${envAtt.id}.$ext")
+                    return
+                }
+                resolved += envAtt to bytes
+            }
+        }
+
+        // All binaries present — re-encrypt locally and persist.
+        val attachments = resolved.mapIndexed { idx, (envAtt, attBytes) ->
+            val encName = "${envAtt.id}.${mimeToExt(envAtt.mime)}.enc"
             imageStore.writeWithName(encName, attBytes)
-            attachments += Attachment(
+            Attachment(
                 id = envAtt.id,
                 itemId = item.id,
-                ordering = attachments.size,
+                ordering = idx,
                 kind = AttachmentKind.SHARED_IMAGE,
                 encryptedFilename = encName,
                 mimeType = envAtt.mime,
@@ -130,6 +149,14 @@ class FsSyncEngine @Inject constructor(
             )
         }
         repository.insertFromFile(item, attachments)
+    }
+
+    private fun mimeToExt(mime: String): String = when (mime.lowercase()) {
+        "image/jpeg", "image/jpg" -> "jpg"
+        "image/png" -> "png"
+        "image/webp" -> "webp"
+        "image/gif" -> "gif"
+        else -> "bin"
     }
 
     private fun envelopeToItem(env: MarkdownEnvelope, body: String): InboxItem {
