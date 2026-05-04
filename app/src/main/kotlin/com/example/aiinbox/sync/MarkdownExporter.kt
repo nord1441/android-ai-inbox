@@ -18,7 +18,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class MarkdownExporter @Inject constructor(
-    private val zone: ZoneId = ZoneId.systemDefault(),
+    private val zone: ZoneId,
 ) {
     private val yaml = Yaml(
         configuration = YamlConfiguration(

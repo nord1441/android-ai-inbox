@@ -74,8 +74,7 @@ class FsSyncEngine @Inject constructor(
         val name = exporter.filenameFor(item)
 
         // Use the root tree directly so existing-file replacement works.
-        val root = DocumentFile.fromTreeUri(saf.androidContext, android.net.Uri.parse(treeUri))
-            ?: throw SafFolderAccess.SafAccessException("could not open tree $treeUri")
+        val root = saf.resolveTreeRoot(treeUri)
         saf.writeAtomically(root, name, "text/markdown", bytes)
 
         // Attachment binaries.

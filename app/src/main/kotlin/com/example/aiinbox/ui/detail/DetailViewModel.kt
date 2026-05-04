@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.aiinbox.data.repository.InboxRepository
+import com.example.aiinbox.sync.FsSyncCoordinator
 import com.example.aiinbox.work.WorkScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -21,6 +22,7 @@ import javax.inject.Inject
 class DetailViewModel @Inject constructor(
     private val repository: InboxRepository,
     private val workScheduler: WorkScheduler,
+    private val syncCoordinator: FsSyncCoordinator,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -95,6 +97,7 @@ class DetailViewModel @Inject constructor(
                 delay(UNDO_WINDOW_MS)
                 if (deletedFlow.value) {
                     repository.finalizeDelete(itemId)
+                    syncCoordinator.requestImmediateSync()
                 }
             }
         }

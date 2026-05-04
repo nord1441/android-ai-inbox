@@ -75,7 +75,7 @@ class SummarizeWorkerTest {
         val worker = TestListenableWorkerBuilder<SummarizeWorker>(ctx)
             .setInputData(Data.Builder().putString(SummarizeWorker.KEY_ITEM_ID, id).build())
             .setWorkerFactory(
-                TestSummarizeWorkerFactory(repo, client, modelManager, ContentHintDetector(), NotificationHelper(ctx), FakeOcrEngine(), store)
+                TestSummarizeWorkerFactory(repo, client, modelManager, ContentHintDetector(), NotificationHelper(ctx), FakeOcrEngine(), store, com.example.aiinbox.sync.FsSyncCoordinator(ctx))
             )
             .build()
 

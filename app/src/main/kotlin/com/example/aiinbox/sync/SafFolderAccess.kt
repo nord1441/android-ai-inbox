@@ -21,14 +21,25 @@ class SafFolderAccess @Inject constructor(
 
     class SafAccessException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
-    /** Exposed so the Engine can resolve a writable tree root via DocumentFile.fromTreeUri. */
-    internal val androidContext: Context get() = context
-
-    private fun root(treeUri: String): DocumentFile {
+    /**
+     * Resolve a tree URI to a writable [DocumentFile] root.
+     *
+     * Production callers pass a `content://...tree/...` URI from
+     * `OpenDocumentTree`; tests pass a `file://` URI obtained from
+     * [DocumentFile.fromFile]. The two need different factory entry points,
+     * so we branch on scheme rather than blindly calling [DocumentFile.fromTreeUri].
+     */
+    internal fun resolveTreeRoot(treeUri: String): DocumentFile {
         val uri = Uri.parse(treeUri)
-        return DocumentFile.fromTreeUri(context, uri)
-            ?: throw SafAccessException("could not resolve tree URI $treeUri")
+        val resolved = if (uri.scheme == "file") {
+            uri.path?.let { DocumentFile.fromFile(java.io.File(it)) }
+        } else {
+            DocumentFile.fromTreeUri(context, uri)
+        }
+        return resolved ?: throw SafAccessException("could not resolve tree URI $treeUri")
     }
+
+    private fun root(treeUri: String): DocumentFile = resolveTreeRoot(treeUri)
 
     /** Returns the user-friendly display name of the tree, e.g. "Inbox" or "Sync/Inbox". */
     fun displayName(treeUri: String): String? =

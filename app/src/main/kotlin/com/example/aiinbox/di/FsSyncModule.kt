@@ -1,13 +1,22 @@
 package com.example.aiinbox.di
 
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import java.time.ZoneId
+import javax.inject.Singleton
 
 /**
- * Empty for now — every FS sync class is constructor-injected. Exists as a
- * seam where later @Provides definitions can land if needed.
+ * FS sync wiring. Most classes are constructor-injected; this module hosts
+ * the small set of platform values (e.g. the device default ZoneId) that
+ * MarkdownExporter needs but cannot construct itself.
  */
 @Module
 @InstallIn(SingletonComponent::class)
-object FsSyncModule
+object FsSyncModule {
+
+    @Provides
+    @Singleton
+    fun provideSystemZoneId(): ZoneId = ZoneId.systemDefault()
+}

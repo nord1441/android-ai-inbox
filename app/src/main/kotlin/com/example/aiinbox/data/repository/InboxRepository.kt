@@ -1,5 +1,6 @@
 package com.example.aiinbox.data.repository
 
+import androidx.annotation.VisibleForTesting
 import com.example.aiinbox.data.db.Attachment
 import com.example.aiinbox.data.db.AttachmentDao
 import com.example.aiinbox.data.db.AttachmentKind
@@ -265,6 +266,46 @@ class InboxRepository @Inject constructor(
     suspend fun insertFromFile(item: com.example.aiinbox.data.db.InboxItem, attachments: List<com.example.aiinbox.data.db.Attachment>) {
         dao.upsert(item)
         if (attachments.isNotEmpty()) attachmentDao.insertAll(attachments)
+    }
+
+    /**
+     * Test-only helper that seeds a COMPLETED item with a single attachment whose
+     * encrypted bytes are written through [imageStore]. Used by FS sync smoke
+     * tests that need an "alive local item" on disk before invoking the engine.
+     */
+    @VisibleForTesting
+    suspend fun createTestItemWithAttachment(text: String, attachmentBytes: ByteArray): String {
+        val now = System.currentTimeMillis()
+        val itemId = UUID.randomUUID().toString()
+        val item = InboxItem(
+            id = itemId,
+            originalText = text,
+            originalSubject = null,
+            sourceApp = "test",
+            receivedAt = now,
+            status = ItemStatus.COMPLETED,
+            updatedAt = now,
+            deletedAt = null,
+        )
+        dao.insert(item)
+        val encryptedFilename = imageStore.save(attachmentBytes)
+        attachmentDao.insertAll(
+            listOf(
+                Attachment(
+                    id = UUID.randomUUID().toString(),
+                    itemId = itemId,
+                    ordering = 0,
+                    kind = AttachmentKind.SHARED_IMAGE,
+                    encryptedFilename = encryptedFilename,
+                    mimeType = "image/jpeg",
+                    widthPx = 0,
+                    heightPx = 0,
+                    byteSize = attachmentBytes.size.toLong(),
+                    createdAt = now,
+                )
+            )
+        )
+        return itemId
     }
 }
 
