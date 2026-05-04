@@ -12,23 +12,35 @@ import com.example.aiinbox.BuildConfig
 import com.example.aiinbox.llm.ModelManager
 import com.example.aiinbox.llm.RamDetector
 import com.example.aiinbox.sync.DriveAuthRepository
+import com.example.aiinbox.sync.SyncCoordinator
+import com.example.aiinbox.sync.SyncStateRepository
 import com.example.aiinbox.work.ModelDownloadWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+private const val PREFS_FILE = "ai_inbox_sync_prefs"
+private const val PREF_SYNC_INTERVAL_MINUTES = "sync_interval_minutes"
+private const val PREF_SYNC_INTERVAL_MANUAL_ONLY = -1L
+private const val PREF_SYNC_INTERVAL_DEFAULT = 30L
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     application: Application,
     private val modelManager: ModelManager,
     private val driveAuthRepository: DriveAuthRepository,
+    private val syncStateRepository: SyncStateRepository,
+    private val syncCoordinator: SyncCoordinator,
 ) : AndroidViewModel(application) {
+
+    private val prefs = application.getSharedPreferences(PREFS_FILE, android.content.Context.MODE_PRIVATE)
 
     private val _state = MutableStateFlow(SettingsUiState())
     val state: StateFlow<SettingsUiState> = _state.asStateFlow()
@@ -36,7 +48,25 @@ class SettingsViewModel @Inject constructor(
     init { refresh() }
 
     init {
-        _state.update { it.copy(driveAccountEmail = driveAuthRepository.currentEmail()) }
+        val storedInterval = prefs.getLong(PREF_SYNC_INTERVAL_MINUTES, PREF_SYNC_INTERVAL_DEFAULT)
+        val intervalMinutes = if (storedInterval == PREF_SYNC_INTERVAL_MANUAL_ONLY) null else storedInterval
+        _state.update {
+            it.copy(
+                driveAccountEmail = driveAuthRepository.currentEmail(),
+                syncIntervalMinutes = intervalMinutes,
+            )
+        }
+        // Observe sync runtime + persistent state into the UI.
+        viewModelScope.launch {
+            syncStateRepository.runtime.collect { rt ->
+                _state.update { it.copy(syncRuntime = rt) }
+            }
+        }
+        viewModelScope.launch {
+            syncStateRepository.lastFullSyncAt.collect { ts ->
+                _state.update { it.copy(lastFullSyncAt = ts) }
+            }
+        }
     }
 
     fun refresh() {
@@ -105,5 +135,17 @@ class SettingsViewModel @Inject constructor(
     fun onUnlinkDriveClicked() {
         driveAuthRepository.unlink()
         _state.update { it.copy(driveAccountEmail = null, driveLinkError = null) }
+    }
+
+    fun onSyncNowClicked() {
+        syncCoordinator.requestImmediateSync()
+    }
+
+    fun onSyncIntervalSelected(minutes: Long?) {
+        _state.update { it.copy(syncIntervalMinutes = minutes) }
+        prefs.edit()
+            .putLong(PREF_SYNC_INTERVAL_MINUTES, minutes ?: PREF_SYNC_INTERVAL_MANUAL_ONLY)
+            .apply()
+        syncCoordinator.setPeriodicInterval(minutes)
     }
 }

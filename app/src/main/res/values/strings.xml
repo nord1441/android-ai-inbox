@@ -53,4 +53,10 @@
     <string name="settings_drive_linked_as">リンク済み: %1$s</string>
     <string name="settings_drive_unlink_button">リンク解除</string>
     <string name="settings_drive_error">エラー: %1$s</string>
+    <string name="settings_drive_status_idle">アイドル</string>
+    <string name="settings_drive_status_running">同期中…</string>
+    <string name="settings_drive_status_error">エラー: %1$s</string>
+    <string name="settings_drive_last_sync">最終同期: %1$s</string>
+    <string name="settings_drive_sync_now">今すぐ同期</string>
+    <string name="settings_drive_interval_label">同期間隔: %1$s</string>
 </resources>

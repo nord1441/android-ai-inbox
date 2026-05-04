@@ -54,4 +54,10 @@
     <string name="settings_drive_linked_as">Linked as %1$s</string>
     <string name="settings_drive_unlink_button">Unlink</string>
     <string name="settings_drive_error">Error: %1$s</string>
+    <string name="settings_drive_status_idle">Idle</string>
+    <string name="settings_drive_status_running">Syncing…</string>
+    <string name="settings_drive_status_error">Error: %1$s</string>
+    <string name="settings_drive_last_sync">Last sync: %1$s</string>
+    <string name="settings_drive_sync_now">Sync now</string>
+    <string name="settings_drive_interval_label">Interval: %1$s</string>
 </resources>
