@@ -24,30 +24,6 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  *
  * 関連: [AppDatabaseMigrationTest]
  */
-val MIGRATION_2_3: Migration = object : Migration(2, 3) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE inbox_items ADD COLUMN deleted_at INTEGER")
-        db.execSQL("ALTER TABLE inbox_items ADD COLUMN last_synced_at INTEGER")
-        db.execSQL("ALTER TABLE attachments ADD COLUMN deleted_at INTEGER")
-        db.execSQL(
-            """
-            CREATE TABLE sync_state (
-                id INTEGER PRIMARY KEY NOT NULL CHECK(id = 1),
-                account_email TEXT,
-                last_full_sync_at INTEGER,
-                last_manifest_etag TEXT
-            )
-            """.trimIndent()
-        )
-        db.execSQL(
-            """
-            INSERT INTO sync_state (id, account_email, last_full_sync_at, last_manifest_etag)
-            VALUES (1, NULL, NULL, NULL)
-            """.trimIndent()
-        )
-    }
-}
-
 val MIGRATION_1_2: Migration = object : Migration(1, 2) {
     override fun migrate(db: SupportSQLiteDatabase) {
         // === 1) inbox_items を再作成して original_text を NULL 許可に ===

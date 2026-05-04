@@ -52,19 +52,23 @@ liabilities once real users have data to lose.
 
 ### Database
 
-- **Remove `.fallbackToDestructiveMigration()`** from
-  `app/src/main/kotlin/com/example/aiinbox/data/db/SqlCipherFactory.kt`
-  → `buildEncryptedDatabase`. Until release this lets a forgotten
-  migration silently nuke the local DB; in production it would silently
-  nuke the user's inbox on the first version mismatch.
-- Confirm that every entity-shape change between the last release and
-  this one has a corresponding `MIGRATION_X_Y` defined in `Migrations.kt`
-  and added to the `addMigrations(...)` call. Migration tests live under
-  `app/src/androidTest/.../data/db/Migration*Test.kt` — run
+- Pre-release iteration **does not ship migrations** for schema bumps.
+  Single-developer use means the recovery path on a schema mismatch is
+  "uninstall and reinstall" (Room throws `IllegalStateException` at
+  `databaseBuilder().build()` time when the on-disk version is older
+  than the entities and no matching migration is registered).
+- Before the first user-facing release, walk the schema-version history
+  in `app/schemas/com.example.aiinbox.data.db.AppDatabase/` and add a
+  `MIGRATION_X_Y` for every gap that lacks one. Drop one of these into
+  `Migrations.kt` per gap, register them in `SqlCipherFactory.kt`'s
+  `.addMigrations(...)` call, and add a `MigrationXToYTest` under
+  `app/src/androidTest/.../data/db/`. Run
   `./gradlew :app:connectedDebugAndroidTest --tests
   "com.example.aiinbox.data.db.Migration*Test"` and confirm all pass.
-- Verify each release-target schema file under
-  `app/schemas/com.example.aiinbox.data.db.AppDatabase/` is committed.
+- The committed schema files under
+  `app/schemas/com.example.aiinbox.data.db.AppDatabase/` are the source
+  of truth — they must be present for every version that real users
+  will ever upgrade from.
 
 ### Drive sync
 

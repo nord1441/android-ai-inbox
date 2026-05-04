@@ -41,12 +41,6 @@ fun buildEncryptedDatabase(
     return Room.databaseBuilder(context, AppDatabase::class.java, "inbox.db")
         .openHelperFactory(SqlCipherFactory.create(passphraseProvider))
         .addCallback(FtsCallback)
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-        // Pre-release escape hatch: if the schema-on-disk doesn't match the
-        // bundled MIGRATIONs (e.g. a forgotten migration during fast iteration),
-        // drop and recreate the DB instead of crashing on launch. MUST be
-        // removed before the first user-facing release — see
-        // docs/development.md → "Release readiness".
-        .fallbackToDestructiveMigration()
+        .addMigrations(MIGRATION_1_2)
         .build()
 }
