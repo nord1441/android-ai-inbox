@@ -47,4 +47,10 @@
     <string name="settings_variant_none">未DL</string>
     <string name="settings_back">戻る</string>
     <string name="detail_no_original">(本文なし)</string>
+    <string name="settings_drive_section">Google Drive 同期</string>
+    <string name="settings_drive_unlinked">未リンク</string>
+    <string name="settings_drive_link_button">Driveをリンク</string>
+    <string name="settings_drive_linked_as">リンク済み: %1$s</string>
+    <string name="settings_drive_unlink_button">リンク解除</string>
+    <string name="settings_drive_error">エラー: %1$s</string>
 </resources>

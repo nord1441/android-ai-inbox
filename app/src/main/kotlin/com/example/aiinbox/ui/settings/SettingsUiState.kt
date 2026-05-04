@@ -7,4 +7,7 @@ data class SettingsUiState(
     val modelSizeBytes: Long = 0,
     val dbSizeBytes: Long = 0,
     val versionName: String = "",
+    val driveAccountEmail: String? = null,
+    val isLinkingInProgress: Boolean = false,
+    val driveLinkError: String? = null,
 )

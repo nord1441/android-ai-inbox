@@ -48,4 +48,10 @@
     <string name="settings_variant_none">Not downloaded</string>
     <string name="settings_back">Back</string>
     <string name="detail_no_original">(no body text)</string>
+    <string name="settings_drive_section">Google Drive sync</string>
+    <string name="settings_drive_unlinked">Not linked</string>
+    <string name="settings_drive_link_button">Link Drive</string>
+    <string name="settings_drive_linked_as">Linked as %1$s</string>
+    <string name="settings_drive_unlink_button">Unlink</string>
+    <string name="settings_drive_error">Error: %1$s</string>
 </resources>
