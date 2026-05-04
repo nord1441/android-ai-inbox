@@ -1,8 +1,13 @@
 package com.example.aiinbox
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,8 +30,18 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var modelManager: ModelManager
 
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        android.util.Log.i("MainActivity", "POST_NOTIFICATIONS granted=$granted")
+        // No retry / rationale UI: denial only suppresses progress + completion
+        // notifications. Processing itself still works because the FGS keeps
+        // running even without a visible notification.
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        maybeRequestPostNotifications()
         val openItemId = intent.getStringExtra(NotificationHelper.EXTRA_OPEN_ITEM_ID)
 
         // Diagnostic: show what ModelManager is actually checking and finding.
@@ -77,5 +92,19 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun maybeRequestPostNotifications() {
+        // POST_NOTIFICATIONS is a runtime permission from API 33. Without it,
+        // the FGS notification, download progress, and completion notification
+        // are all silently dropped — making long-running summaries appear stuck
+        // from the user's perspective.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val granted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS,
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) return
+        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 }

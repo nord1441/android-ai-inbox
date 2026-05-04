@@ -7,7 +7,14 @@ import java.time.ZoneId
 
 class LlmResponseParser(private val zone: ZoneId) {
 
-    private val json = Json { ignoreUnknownKeys = true; isLenient = true }
+    // coerceInputValues lets a literal `null` for a non-nullable field with a
+    // default fall back to that default — Gemma sometimes emits `"category": null`
+    // instead of just omitting the key.
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        coerceInputValues = true
+    }
 
     fun parse(raw: String): SummarizeResult? {
         val jsonStr = extractJson(raw) ?: return null
@@ -28,10 +35,10 @@ class LlmResponseParser(private val zone: ZoneId) {
                 title = raw.title,
                 summary = raw.summary,
                 category = raw.category,
-                tags = raw.tags,
-                people = raw.people,
-                places = raw.places,
-                urls = raw.urls,
+                tags = raw.tags.filterNotNull(),
+                people = raw.people.filterNotNull(),
+                places = raw.places.filterNotNull(),
+                urls = raw.urls.filterNotNull(),
                 event = event,
             )
         } catch (e: Exception) {
@@ -52,15 +59,18 @@ class LlmResponseParser(private val zone: ZoneId) {
         return null
     }
 
+    // Gemma occasionally emits `"urls": [null]` instead of `[]` when a field
+    // is empty. Element nullability prevents `MissingFieldException` on parse;
+    // the boundary call site applies `filterNotNull()`.
     @Serializable
     private data class RawSummarizeResult(
         val title: String? = null,
         val summary: String? = null,
         val category: String? = null,
-        val tags: List<String> = emptyList(),
-        val people: List<String> = emptyList(),
-        val places: List<String> = emptyList(),
-        val urls: List<String> = emptyList(),
+        val tags: List<String?> = emptyList(),
+        val people: List<String?> = emptyList(),
+        val places: List<String?> = emptyList(),
+        val urls: List<String?> = emptyList(),
         val event: RawEvent? = null,
     )
 

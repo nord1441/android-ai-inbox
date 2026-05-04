@@ -1,6 +1,12 @@
 package com.example.aiinbox.llm
 
+import java.time.Clock
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
 class PromptBuilder(
+    private val clock: Clock = Clock.systemDefaultZone(),
     private val maxInputChars: Int = 8000,
 ) {
     fun build(text: String, hint: ContentHint): String {
@@ -17,14 +23,27 @@ class PromptBuilder(
             ContentHint.UNKNOWN -> ""
         }
 
+        // Without "today", Gemma resolves "5/4(月)" against its training-data
+        // calendar (≈ 2024) rather than the current device date, so events get
+        // backdated by years.
+        val today = LocalDate.now(clock)
+        val todayLabel = today.format(TODAY_FORMATTER)
+
         return SYSTEM_PROMPT
+            .replace("{{TODAY}}", todayLabel)
             .replace("{{HINT_GUIDANCE}}", hintGuidance)
             .replace("{{INPUT}}", truncated)
     }
 
     companion object {
+        private val TODAY_FORMATTER: DateTimeFormatter =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd (EEE)", Locale.JAPANESE)
+
         private const val SYSTEM_PROMPT = """あなたはテキストの要約と構造化情報抽出のアシスタントです。
 入力テキストを読んで、以下のJSONスキーマに厳密に従ってJSONのみを出力してください。説明文や前置きは禁止です。
+
+今日の日付: {{TODAY}}
+入力中の "明日" / "来週月曜" / "5/4(月)" などの日付表現は、すべてこの「今日の日付」を基準に絶対日時に変換してください。
 
 {
   "title": "30文字以内の短いタイトル",
@@ -44,6 +63,7 @@ class PromptBuilder(
 }
 
 イベントが含まれない場合は "event" を null にしてください。
+配列フィールド (tags / people / places / urls) に該当するものが無い場合は空配列 [] を使ってください。null や [null] は使わないでください。
 タイムゾーン未指定の時刻は端末ローカル時刻として解釈してください。
 
 {{HINT_GUIDANCE}}
