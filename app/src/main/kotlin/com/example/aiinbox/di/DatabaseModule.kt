@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
 import com.example.aiinbox.data.db.AppDatabase
 import com.example.aiinbox.data.db.AttachmentDao
+import com.example.aiinbox.data.db.FsSyncStateDao
 import com.example.aiinbox.data.db.InboxDao
 import com.example.aiinbox.data.db.buildEncryptedDatabase
 import dagger.Module
@@ -35,4 +36,7 @@ object DatabaseModule {
 
     @Provides
     fun provideAttachmentDao(db: AppDatabase): AttachmentDao = db.attachmentDao()
+
+    @Provides
+    fun provideFsSyncStateDao(db: AppDatabase): FsSyncStateDao = db.fsSyncStateDao()
 }
