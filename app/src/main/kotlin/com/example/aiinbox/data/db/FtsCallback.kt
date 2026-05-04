@@ -31,22 +31,24 @@ object FtsCallback : RoomDatabase.Callback() {
 
     fun createTriggers(db: SupportSQLiteDatabase) {
         // === inbox_items 側トリガ：ocr_text 列を attachments から集計 ===
+        // Only index non-tombstoned rows; tombstoned rows must not enter FTS.
         db.execSQL(
             """
             CREATE TRIGGER IF NOT EXISTS inbox_items_ai AFTER INSERT ON inbox_items BEGIN
                 INSERT INTO inbox_fts(id, title, summary, original_text, tags, people, places, ocr_text)
-                VALUES (new.id,
-                        coalesce(new.title, ''),
-                        coalesce(new.summary, ''),
-                        coalesce(new.original_text, ''),
-                        coalesce(new.tags, ''),
-                        coalesce(new.people, ''),
-                        coalesce(new.places, ''),
-                        coalesce(
-                            (SELECT GROUP_CONCAT(ocr_text, ' ')
-                               FROM attachments WHERE item_id = new.id),
-                            ''
-                        ));
+                SELECT new.id,
+                       coalesce(new.title, ''),
+                       coalesce(new.summary, ''),
+                       coalesce(new.original_text, ''),
+                       coalesce(new.tags, ''),
+                       coalesce(new.people, ''),
+                       coalesce(new.places, ''),
+                       coalesce(
+                           (SELECT GROUP_CONCAT(ocr_text, ' ')
+                              FROM attachments WHERE item_id = new.id),
+                           ''
+                       )
+                WHERE new.deleted_at IS NULL;
             END;
             """.trimIndent()
         )
@@ -57,28 +59,31 @@ object FtsCallback : RoomDatabase.Callback() {
             END;
             """.trimIndent()
         )
+        // On update: always remove the old FTS row, then re-insert only if not tombstoned.
         db.execSQL(
             """
             CREATE TRIGGER IF NOT EXISTS inbox_items_au AFTER UPDATE ON inbox_items BEGIN
                 DELETE FROM inbox_fts WHERE id = old.id;
                 INSERT INTO inbox_fts(id, title, summary, original_text, tags, people, places, ocr_text)
-                VALUES (new.id,
-                        coalesce(new.title, ''),
-                        coalesce(new.summary, ''),
-                        coalesce(new.original_text, ''),
-                        coalesce(new.tags, ''),
-                        coalesce(new.people, ''),
-                        coalesce(new.places, ''),
-                        coalesce(
-                            (SELECT GROUP_CONCAT(ocr_text, ' ')
-                               FROM attachments WHERE item_id = new.id),
-                            ''
-                        ));
+                SELECT new.id,
+                       coalesce(new.title, ''),
+                       coalesce(new.summary, ''),
+                       coalesce(new.original_text, ''),
+                       coalesce(new.tags, ''),
+                       coalesce(new.people, ''),
+                       coalesce(new.places, ''),
+                       coalesce(
+                           (SELECT GROUP_CONCAT(ocr_text, ' ')
+                              FROM attachments WHERE item_id = new.id),
+                           ''
+                       )
+                WHERE new.deleted_at IS NULL;
             END;
             """.trimIndent()
         )
 
         // === attachments 側トリガ：item_id の FTS 行を再構築 ===
+        // Guard against resurrecting a tombstoned parent's FTS row.
         db.execSQL(
             """
             CREATE TRIGGER IF NOT EXISTS attachments_ai AFTER INSERT ON attachments BEGIN
@@ -96,7 +101,7 @@ object FtsCallback : RoomDatabase.Callback() {
                               FROM attachments WHERE item_id = i.id),
                            ''
                        )
-                  FROM inbox_items i WHERE i.id = new.item_id;
+                  FROM inbox_items i WHERE i.id = new.item_id AND i.deleted_at IS NULL;
             END;
             """.trimIndent()
         )
@@ -117,7 +122,7 @@ object FtsCallback : RoomDatabase.Callback() {
                               FROM attachments WHERE item_id = i.id),
                            ''
                        )
-                  FROM inbox_items i WHERE i.id = new.item_id;
+                  FROM inbox_items i WHERE i.id = new.item_id AND i.deleted_at IS NULL;
             END;
             """.trimIndent()
         )
@@ -138,7 +143,7 @@ object FtsCallback : RoomDatabase.Callback() {
                               FROM attachments WHERE item_id = i.id),
                            ''
                        )
-                  FROM inbox_items i WHERE i.id = old.item_id;
+                  FROM inbox_items i WHERE i.id = old.item_id AND i.deleted_at IS NULL;
             END;
             """.trimIndent()
         )

@@ -13,7 +13,6 @@ import com.example.aiinbox.ui.inbox.InboxFilter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -158,31 +157,25 @@ class InboxRepository @Inject constructor(
         )
     }
 
-    /**
-     * In-memory buffer for soft-deleted items (with their attachments). Holds full
-     * InboxItemWithAttachments between softDelete and finalizeDelete so restoreDeleted
-     * can recreate both the item row and its attachment rows. Files are kept on disk
-     * until finalizeDelete deletes them.
-     */
-    private val deletedBuffer = ConcurrentHashMap<String, InboxItemWithAttachments>()
-
     suspend fun softDelete(id: String): Boolean {
-        val full = dao.getByIdWithAttachments(id) ?: return false
-        deletedBuffer[id] = full
-        dao.deleteById(id)  // CASCADE で attachments 行も消える
+        val current = dao.getById(id) ?: return false
+        if (current.deletedAt != null) return false
+        val now = System.currentTimeMillis()
+        dao.markDeleted(id, now)
         return true
     }
 
     suspend fun restoreDeleted(id: String): Boolean {
-        val full = deletedBuffer.remove(id) ?: return false
-        dao.insert(full.item)
-        attachmentDao.insertAll(full.attachments)
+        val full = dao.getWithAttachmentsIncludingDeleted(id) ?: return false
+        if (full.item.deletedAt == null) return false
+        dao.restore(id, System.currentTimeMillis())
         return true
     }
 
-    fun finalizeDelete(id: String) {
-        val full = deletedBuffer.remove(id) ?: return
+    suspend fun finalizeDelete(id: String) {
+        val full = dao.getWithAttachmentsIncludingDeleted(id) ?: return
         full.attachments.forEach { imageStore.delete(it.encryptedFilename) }
+        // The DB row stays as a tombstone until FsTombstoneGcWorker fires.
     }
 
     suspend fun delete(id: String) {
@@ -261,6 +254,17 @@ class InboxRepository @Inject constructor(
 
     suspend fun updateAttachmentOcr(attachmentId: String, ocrText: String?) {
         attachmentDao.updateOcr(attachmentId, ocrText, System.currentTimeMillis())
+    }
+
+    suspend fun allLocalRefs(): List<com.example.aiinbox.data.db.InboxRefRow> =
+        dao.allRefsIncludingDeleted()
+
+    suspend fun getWithAttachmentsIncludingDeleted(id: String): com.example.aiinbox.data.db.InboxItemWithAttachments? =
+        dao.getWithAttachmentsIncludingDeleted(id)
+
+    suspend fun insertFromFile(item: com.example.aiinbox.data.db.InboxItem, attachments: List<com.example.aiinbox.data.db.Attachment>) {
+        dao.upsert(item)
+        if (attachments.isNotEmpty()) attachmentDao.insertAll(attachments)
     }
 }
 
