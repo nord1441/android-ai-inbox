@@ -7,7 +7,8 @@ import org.junit.Test
 class FsSyncEngineDiffTest {
 
     private fun loc(id: String, deletedAt: Long? = null) = InboxRefRow(id, deletedAt, 0L)
-    private fun rem(id: String, isTombstone: Boolean = false) = FsSyncEngine.RemoteRef(id, isTombstone)
+    private fun rem(id: String, isTombstone: Boolean = false) =
+        FsSyncEngine.Companion.RemoteIdRef(id, isTombstone)
 
     @Test
     fun localOnly_alive_isExported() {

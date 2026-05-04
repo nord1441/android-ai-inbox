@@ -21,6 +21,9 @@ class SafFolderAccess @Inject constructor(
 
     class SafAccessException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
+    /** Exposed so the Engine can resolve a writable tree root via DocumentFile.fromTreeUri. */
+    internal val androidContext: Context get() = context
+
     private fun root(treeUri: String): DocumentFile {
         val uri = Uri.parse(treeUri)
         return DocumentFile.fromTreeUri(context, uri)

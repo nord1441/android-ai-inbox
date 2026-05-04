@@ -68,6 +68,36 @@ class EncryptedImageStore @Inject constructor(
         return encrypted.openFileInput()
     }
 
+    /** [name] のファイルを復号化して全バイトを返す。存在しなければ null。 */
+    fun readBytes(name: String): ByteArray? {
+        val file = File(baseDir, name)
+        if (!file.exists()) return null
+        return read(name).use { it.readBytes() }
+    }
+
+    /**
+     * [name] で [bytes] を保存する。同名が既存なら上書き
+     * (EncryptedFile.Builder は対象が存在すると例外なので、先に削除する)。
+     * インポート経路で「DB の encryptedFilename と一致するファイル名」を要求されるため必要。
+     */
+    fun writeWithName(name: String, bytes: ByteArray) {
+        baseDir.mkdirs()
+        val file = File(baseDir, name)
+        if (file.exists()) file.delete()
+        val encrypted = EncryptedFile.Builder(
+            context,
+            file,
+            masterKey,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB,
+        ).build()
+        try {
+            encrypted.openFileOutput().use { it.write(bytes) }
+        } catch (t: Throwable) {
+            runCatching { file.delete() }
+            throw t
+        }
+    }
+
     /** [name] のファイルを削除。存在しなければ no-op。 */
     fun delete(name: String) {
         File(baseDir, name).delete()
