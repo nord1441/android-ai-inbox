@@ -47,4 +47,16 @@
     <string name="settings_variant_none">未DL</string>
     <string name="settings_back">戻る</string>
     <string name="detail_no_original">(本文なし)</string>
+    <string name="settings_fs_sync_section">ローカル/外部 Markdown 同期</string>
+    <string name="settings_fs_sync_unconfigured">同期フォルダ未設定</string>
+    <string name="settings_fs_sync_pick_folder">同期フォルダを選ぶ</string>
+    <string name="settings_fs_sync_change_folder">フォルダを変更</string>
+    <string name="settings_fs_sync_clear_folder">同期を解除</string>
+    <string name="settings_fs_sync_folder">フォルダ: %1$s</string>
+    <string name="settings_fs_sync_status_idle">アイドル</string>
+    <string name="settings_fs_sync_status_running">同期中…</string>
+    <string name="settings_fs_sync_status_error">エラー: %1$s</string>
+    <string name="settings_fs_sync_last_sync">最終同期: %1$s</string>
+    <string name="settings_fs_sync_now">今すぐ同期</string>
+    <string name="settings_fs_sync_interval_label">同期間隔: %1$s</string>
 </resources>

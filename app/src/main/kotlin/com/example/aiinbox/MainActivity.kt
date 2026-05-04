@@ -15,6 +15,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.aiinbox.llm.ModelManager
 import com.example.aiinbox.notification.NotificationHelper
+import com.example.aiinbox.sync.FsSyncCoordinator
+import com.example.aiinbox.sync.FsSyncFolderStore
 import com.example.aiinbox.ui.detail.DetailScreen
 import com.example.aiinbox.ui.detail.DetailViewModel
 import com.example.aiinbox.ui.inbox.InboxScreen
@@ -29,6 +31,8 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var modelManager: ModelManager
+    @Inject lateinit var syncCoordinator: FsSyncCoordinator
+    @Inject lateinit var folderStore: FsSyncFolderStore
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -42,6 +46,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         maybeRequestPostNotifications()
+
+        if (folderStore.get() != null) {
+            syncCoordinator.requestImmediateSync()
+            val prefs = getSharedPreferences("ai_inbox_settings", MODE_PRIVATE)
+            val stored = prefs.getLong("fs_sync_interval_minutes", 30L)
+            val interval: Long? = if (stored == -1L) null else stored
+            syncCoordinator.setPeriodicInterval(interval)
+        }
+
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "fs_tombstone_gc",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            androidx.work.PeriodicWorkRequestBuilder<com.example.aiinbox.work.FsTombstoneGcWorker>(
+                1, java.util.concurrent.TimeUnit.DAYS,
+            ).build(),
+        )
+
         val openItemId = intent.getStringExtra(NotificationHelper.EXTRA_OPEN_ITEM_ID)
 
         // Diagnostic: show what ModelManager is actually checking and finding.

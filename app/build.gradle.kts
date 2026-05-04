@@ -112,6 +112,9 @@ dependencies {
     testImplementation(libs.okhttp.mockwebserver)
     androidTestImplementation(libs.okhttp.mockwebserver)
 
+    implementation(libs.androidx.documentfile)
+    implementation(libs.kotlinx.serialization.yaml)
+
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)

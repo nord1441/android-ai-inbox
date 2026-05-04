@@ -6,6 +6,7 @@ import com.example.aiinbox.data.db.InboxItem
 import com.example.aiinbox.data.db.InboxItemWithAttachments
 import com.example.aiinbox.data.db.ItemStatus
 import com.example.aiinbox.data.repository.InboxRepository
+import com.example.aiinbox.sync.FsSyncCoordinator
 import com.example.aiinbox.work.WorkScheduler
 import com.google.common.truth.Truth.assertThat
 import io.mockk.coEvery
@@ -28,8 +29,11 @@ class DetailViewModelTest {
     @Before fun setup() { Dispatchers.setMain(UnconfinedTestDispatcher()) }
     @After fun teardown() { Dispatchers.resetMain() }
 
-    private fun newVm(repo: InboxRepository, ws: WorkScheduler = mockk(relaxed = true)) =
-        DetailViewModel(repo, ws, SavedStateHandle(mapOf(DetailViewModel.NAV_ARG_ID to "abc")))
+    private fun newVm(
+        repo: InboxRepository,
+        ws: WorkScheduler = mockk(relaxed = true),
+        coordinator: FsSyncCoordinator = mockk(relaxed = true),
+    ) = DetailViewModel(repo, ws, coordinator, SavedStateHandle(mapOf(DetailViewModel.NAV_ARG_ID to "abc")))
 
     private fun wrap(item: InboxItem) = InboxItemWithAttachments(item, emptyList())
 
