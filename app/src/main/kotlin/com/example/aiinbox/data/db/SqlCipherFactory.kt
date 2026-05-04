@@ -41,6 +41,6 @@ fun buildEncryptedDatabase(
     return Room.databaseBuilder(context, AppDatabase::class.java, "inbox.db")
         .openHelperFactory(SqlCipherFactory.create(passphraseProvider))
         .addCallback(FtsCallback)
-        .addMigrations(MIGRATION_1_2)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
         .build()
 }

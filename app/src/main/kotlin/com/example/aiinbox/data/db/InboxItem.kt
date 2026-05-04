@@ -33,4 +33,6 @@ data class InboxItem(
     @Embedded(prefix = "event_") val event: ExtractedEvent? = null,
     @ColumnInfo(name = "user_edited_fields") val userEditedFields: Set<String> = emptySet(),
     @ColumnInfo(name = "updated_at") val updatedAt: Long,
+    @ColumnInfo(name = "deleted_at") val deletedAt: Long? = null,
+    @ColumnInfo(name = "last_synced_at") val lastSyncedAt: Long? = null,
 )

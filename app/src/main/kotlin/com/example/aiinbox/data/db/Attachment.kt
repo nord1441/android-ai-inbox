@@ -34,4 +34,5 @@ data class Attachment(
     @ColumnInfo(name = "ocr_text") val ocrText: String? = null,
     @ColumnInfo(name = "ocr_completed_at") val ocrCompletedAt: Long? = null,
     @ColumnInfo(name = "created_at") val createdAt: Long,
+    @ColumnInfo(name = "deleted_at") val deletedAt: Long? = null,
 )
