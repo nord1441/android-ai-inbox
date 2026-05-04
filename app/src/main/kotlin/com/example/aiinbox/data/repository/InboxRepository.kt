@@ -1,5 +1,6 @@
 package com.example.aiinbox.data.repository
 
+import androidx.annotation.VisibleForTesting
 import com.example.aiinbox.data.db.Attachment
 import com.example.aiinbox.data.db.AttachmentDao
 import com.example.aiinbox.data.db.AttachmentKind
@@ -186,9 +187,13 @@ class InboxRepository @Inject constructor(
     }
 
     suspend fun delete(id: String) {
+        val now = System.currentTimeMillis()
         val full = dao.getByIdWithAttachments(id)
-        dao.deleteById(id)
+        // Erase encrypted bytes immediately — no point keeping them locally.
+        // The deleted_at flag carries delete intent into Drive sync.
         full?.attachments?.forEach { imageStore.delete(it.encryptedFilename) }
+        attachmentDao.markDeletedForItem(id, now)
+        dao.markDeleted(id, now)
     }
 
     suspend fun search(query: String): List<InboxItem> {
@@ -261,6 +266,31 @@ class InboxRepository @Inject constructor(
 
     suspend fun updateAttachmentOcr(attachmentId: String, ocrText: String?) {
         attachmentDao.updateOcr(attachmentId, ocrText, System.currentTimeMillis())
+    }
+
+    /**
+     * Test-only helper: inserts a COMPLETED item with a single encrypted attachment,
+     * returning the new item id. Uses [imageStore] to persist [attachmentBytes] so
+     * the tombstone test can verify the file is erased after [delete].
+     */
+    @VisibleForTesting
+    suspend fun createTestItemWithAttachment(text: String, attachmentBytes: ByteArray): String {
+        val encName = imageStore.save(attachmentBytes)
+        return createPendingItemWithAttachments(
+            text = text,
+            subject = null,
+            sourceApp = "test",
+            drafts = listOf(
+                AttachmentDraft(
+                    kind = AttachmentKind.SHARED_IMAGE,
+                    encryptedFilename = encName,
+                    mimeType = "image/jpeg",
+                    widthPx = 1,
+                    heightPx = 1,
+                    byteSize = attachmentBytes.size.toLong(),
+                )
+            ),
+        )
     }
 }
 

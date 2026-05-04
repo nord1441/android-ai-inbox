@@ -73,6 +73,9 @@ class EncryptedImageStore @Inject constructor(
         File(baseDir, name).delete()
     }
 
+    /** Returns true if the encrypted file for [name] exists on disk. */
+    fun exists(name: String): Boolean = File(baseDir, name).exists()
+
     private companion object {
         const val KEY_ALIAS_ATTACHMENT = "ai_inbox_attachment_master_key"
     }

@@ -33,10 +33,10 @@ interface InboxDao {
     @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
     fun observeById(id: String): Flow<InboxItem?>
 
-    @Query("SELECT * FROM inbox_items ORDER BY received_at DESC")
+    @Query("SELECT * FROM inbox_items WHERE deleted_at IS NULL ORDER BY received_at DESC")
     fun observeAll(): Flow<List<InboxItem>>
 
-    @Query("SELECT * FROM inbox_items WHERE status = :status ORDER BY received_at ASC")
+    @Query("SELECT * FROM inbox_items WHERE status = :status AND deleted_at IS NULL ORDER BY received_at ASC")
     suspend fun getByStatus(status: ItemStatus): List<InboxItem>
 
     @RawQuery
@@ -49,6 +49,7 @@ interface InboxDao {
                 SELECT i.* FROM inbox_items i
                 JOIN inbox_fts f ON f.id = i.id
                 WHERE inbox_fts MATCH ?
+                  AND i.deleted_at IS NULL
                 ORDER BY i.received_at DESC
                 """,
                 arrayOf(query),
@@ -58,7 +59,8 @@ interface InboxDao {
     @Query(
         """
         SELECT * FROM inbox_items
-        WHERE (:hasEventOnly = 0 OR event_title IS NOT NULL)
+        WHERE deleted_at IS NULL
+          AND (:hasEventOnly = 0 OR event_title IS NOT NULL)
         ORDER BY received_at DESC
         """
     )
@@ -80,6 +82,7 @@ interface InboxDao {
                 SELECT i.* FROM inbox_items i
                 JOIN inbox_fts f ON f.id = i.id
                 WHERE inbox_fts MATCH ?
+                  AND i.deleted_at IS NULL
                   AND (? = 0 OR i.event_title IS NOT NULL)
                 ORDER BY i.received_at DESC
                 """,
@@ -95,15 +98,16 @@ interface InboxDao {
     @Query(
         """
         SELECT * FROM inbox_items
-        WHERE (
+        WHERE deleted_at IS NULL
+          AND (
             title LIKE :pattern OR
             summary LIKE :pattern OR
             original_text LIKE :pattern OR
             tags LIKE :pattern OR
             people LIKE :pattern OR
             places LIKE :pattern
-        )
-        AND (:hasEventOnly = 0 OR event_title IS NOT NULL)
+          )
+          AND (:hasEventOnly = 0 OR event_title IS NOT NULL)
         ORDER BY received_at DESC
         """
     )
@@ -118,14 +122,15 @@ interface InboxDao {
     fun observeByIdWithAttachments(id: String): Flow<InboxItemWithAttachments?>
 
     @Transaction
-    @Query("SELECT * FROM inbox_items ORDER BY received_at DESC")
+    @Query("SELECT * FROM inbox_items WHERE deleted_at IS NULL ORDER BY received_at DESC")
     fun observeAllWithAttachments(): Flow<List<InboxItemWithAttachments>>
 
     @Transaction
     @Query(
         """
         SELECT * FROM inbox_items
-        WHERE (:hasEventOnly = 0 OR event_title IS NOT NULL)
+        WHERE deleted_at IS NULL
+          AND (:hasEventOnly = 0 OR event_title IS NOT NULL)
         ORDER BY received_at DESC
         """
     )
@@ -147,6 +152,7 @@ interface InboxDao {
                 SELECT i.* FROM inbox_items i
                 JOIN inbox_fts f ON f.id = i.id
                 WHERE inbox_fts MATCH ?
+                  AND i.deleted_at IS NULL
                   AND (? = 0 OR i.event_title IS NOT NULL)
                 ORDER BY i.received_at DESC
                 """,
@@ -158,7 +164,8 @@ interface InboxDao {
     @Query(
         """
         SELECT * FROM inbox_items
-        WHERE (
+        WHERE deleted_at IS NULL
+          AND (
             title LIKE :pattern OR
             summary LIKE :pattern OR
             original_text LIKE :pattern OR
@@ -166,8 +173,8 @@ interface InboxDao {
             people LIKE :pattern OR
             places LIKE :pattern OR
             EXISTS (SELECT 1 FROM attachments a WHERE a.item_id = inbox_items.id AND a.ocr_text LIKE :pattern)
-        )
-        AND (:hasEventOnly = 0 OR event_title IS NOT NULL)
+          )
+          AND (:hasEventOnly = 0 OR event_title IS NOT NULL)
         ORDER BY received_at DESC
         """
     )
@@ -175,4 +182,7 @@ interface InboxDao {
         pattern: String,
         hasEventOnly: Int,
     ): Flow<List<InboxItemWithAttachments>>
+
+    @Query("UPDATE inbox_items SET deleted_at = :deletedAt, updated_at = :deletedAt WHERE id = :id")
+    suspend fun markDeleted(id: String, deletedAt: Long)
 }
