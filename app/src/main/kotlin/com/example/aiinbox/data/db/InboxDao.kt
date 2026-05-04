@@ -210,6 +210,14 @@ interface InboxDao {
 
     @Query("UPDATE inbox_items SET deleted_at = :deletedAt, updated_at = :deletedAt WHERE id = :id")
     suspend fun markDeleted(id: String, deletedAt: Long)
+
+    /** GC: tombstone rows whose deleted_at is older than [cutoff] (epoch ms). */
+    @Query("SELECT * FROM inbox_items WHERE deleted_at IS NOT NULL AND deleted_at < :cutoff")
+    suspend fun tombstonesOlderThan(cutoff: Long): List<InboxItem>
+
+    /** GC: physically remove the row (alias for [deleteById] with sync-aware naming). */
+    @Query("DELETE FROM inbox_items WHERE id = :id")
+    suspend fun physicalDeleteById(id: String)
 }
 
 /**

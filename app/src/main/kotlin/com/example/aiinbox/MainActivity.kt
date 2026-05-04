@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         maybeRequestPostNotifications()
         maybeKickOffSync()
+        enrollTombstoneGc()
         val openItemId = intent.getStringExtra(NotificationHelper.EXTRA_OPEN_ITEM_ID)
 
         // Diagnostic: show what ModelManager is actually checking and finding.
@@ -112,6 +113,27 @@ class MainActivity : ComponentActivity() {
         val stored = prefs.getLong("sync_interval_minutes", 30L)
         val interval: Long? = if (stored == -1L) null else stored
         syncCoordinator.setPeriodicInterval(interval)
+    }
+
+    /**
+     * Daily background sweep that purges tombstones older than 30 days,
+     * locally and (best-effort) on Drive. Constraint UNMETERED so we don't
+     * waste mobile bandwidth on housekeeping.
+     */
+    private fun enrollTombstoneGc() {
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "tombstone_gc",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            androidx.work.PeriodicWorkRequestBuilder<com.example.aiinbox.work.TombstoneGcWorker>(
+                1, java.util.concurrent.TimeUnit.DAYS,
+            )
+                .setConstraints(
+                    androidx.work.Constraints.Builder()
+                        .setRequiredNetworkType(androidx.work.NetworkType.UNMETERED)
+                        .build()
+                )
+                .build(),
+        )
     }
 
     private fun maybeRequestPostNotifications() {

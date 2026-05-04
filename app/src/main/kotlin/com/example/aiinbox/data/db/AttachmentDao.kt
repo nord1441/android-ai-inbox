@@ -40,4 +40,8 @@ interface AttachmentDao {
 
     @Query("UPDATE attachments SET deleted_at = :deletedAt WHERE item_id = :itemId")
     suspend fun markDeletedForItem(itemId: String, deletedAt: Long)
+
+    /** GC: physically remove all attachment rows for an item. */
+    @Query("DELETE FROM attachments WHERE item_id = :itemId")
+    suspend fun physicalDeleteForItem(itemId: String)
 }
