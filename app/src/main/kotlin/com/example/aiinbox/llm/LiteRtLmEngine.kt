@@ -78,13 +78,23 @@ class LiteRtLmEngine @Inject constructor(
         check(_isLoaded.value) { "ensureLoaded() must be called before summarize()" }
         val prompt = promptBuilder.build(text, hint)
 
-        val raw = generate(prompt)
+        val raw = generate(prompt, label = "structured")
         responseParser.parse(raw)?.let { return it }
+
+        // Parse failed → an extra fallback round-trip is about to run. Log the raw
+        // output (truncated) so the next session can diagnose how the model
+        // deviated from the JSON schema.
+        android.util.Log.w(
+            TAG,
+            "structured parse failed; running fallback. rawLen=${raw.length} " +
+                "rawHead=${raw.take(400).replace('\n', ' ')} " +
+                "rawTail=${raw.takeLast(200).replace('\n', ' ')}",
+        )
 
         // Fallback: simpler prompt for plain summary if structured parse fails.
         val fallbackPrompt =
             "次のテキストを200文字以内で要約してください。出力は要約文のみ：\n\n${text.take(4000)}"
-        val fallback = generate(fallbackPrompt)
+        val fallback = generate(fallbackPrompt, label = "fallback")
         return SummarizeResult(
             title = null,
             summary = fallback.trim().take(200),
@@ -97,14 +107,48 @@ class LiteRtLmEngine @Inject constructor(
         )
     }
 
-    private suspend fun generate(prompt: String): String = withContext(Dispatchers.IO) {
+    private suspend fun generate(prompt: String, label: String): String = withContext(Dispatchers.IO) {
         val current = engine
             ?: error("Engine not initialized — ensureLoaded() must complete first")
         val cfg = ConversationConfig(systemInstruction = Contents.of(SYSTEM_INSTRUCTION))
         val out = StringBuilder()
+        val startNs = System.nanoTime()
+        var firstTokenNs = -1L
+        var tokenCount = 0
+        var lastLogNs = startNs
+        android.util.Log.i(TAG, "generate[$label] start. promptLen=${prompt.length}")
         current.createConversation(cfg).use { conversation ->
-            conversation.sendMessageAsync(prompt).collect { token -> out.append(token) }
+            conversation.sendMessageAsync(prompt).collect { token ->
+                if (firstTokenNs < 0L) {
+                    firstTokenNs = System.nanoTime()
+                    val ttftMs = (firstTokenNs - startNs) / 1_000_000
+                    android.util.Log.i(TAG, "generate[$label] TTFT=${ttftMs}ms (prefill done)")
+                }
+                out.append(token)
+                tokenCount++
+                val now = System.nanoTime()
+                if (now - lastLogNs > PROGRESS_LOG_INTERVAL_NS) {
+                    val sinceFirstMs = (now - firstTokenNs) / 1_000_000
+                    val tps = if (sinceFirstMs > 0) tokenCount * 1000.0 / sinceFirstMs else 0.0
+                    android.util.Log.i(
+                        TAG,
+                        "generate[$label] progress: tokens=$tokenCount " +
+                            "sinceFirstMs=${sinceFirstMs} tps=${"%.2f".format(tps)} chars=${out.length}",
+                    )
+                    lastLogNs = now
+                }
+            }
         }
+        val endNs = System.nanoTime()
+        val totalMs = (endNs - startNs) / 1_000_000
+        val ttftMs = if (firstTokenNs > 0L) (firstTokenNs - startNs) / 1_000_000 else -1L
+        val genMs = if (firstTokenNs > 0L) (endNs - firstTokenNs) / 1_000_000 else 0L
+        val tps = if (genMs > 0) tokenCount * 1000.0 / genMs else 0.0
+        android.util.Log.i(
+            TAG,
+            "generate[$label] done. tokens=$tokenCount totalMs=$totalMs ttftMs=$ttftMs " +
+                "genMs=$genMs tps=${"%.2f".format(tps)} chars=${out.length}",
+        )
         out.toString()
     }
 
@@ -114,6 +158,8 @@ class LiteRtLmEngine @Inject constructor(
     }
 
     companion object {
+        private const val TAG = "LiteRtLmEngine"
+        private const val PROGRESS_LOG_INTERVAL_NS = 5_000_000_000L  // 5 seconds
         private const val SYSTEM_INSTRUCTION =
             "You are a Japanese-language summarization and structured-extraction assistant. " +
                 "Always respond in Japanese unless the user requests otherwise. " +
