@@ -44,6 +44,45 @@ notification will be silently dropped — long summaries look stuck.
 Toggle it from device Settings → Apps → AI Inbox → Notifications, then
 reopen the app.
 
+## Release readiness
+
+Before cutting the first user-facing release, walk this checklist. Most
+items are escape hatches that exist for fast iteration and become
+liabilities once real users have data to lose.
+
+### Database
+
+- **Remove `.fallbackToDestructiveMigration()`** from
+  `app/src/main/kotlin/com/example/aiinbox/data/db/SqlCipherFactory.kt`
+  → `buildEncryptedDatabase`. Until release this lets a forgotten
+  migration silently nuke the local DB; in production it would silently
+  nuke the user's inbox on the first version mismatch.
+- Confirm that every entity-shape change between the last release and
+  this one has a corresponding `MIGRATION_X_Y` defined in `Migrations.kt`
+  and added to the `addMigrations(...)` call. Migration tests live under
+  `app/src/androidTest/.../data/db/Migration*Test.kt` — run
+  `./gradlew :app:connectedDebugAndroidTest --tests
+  "com.example.aiinbox.data.db.Migration*Test"` and confirm all pass.
+- Verify each release-target schema file under
+  `app/schemas/com.example.aiinbox.data.db.AppDatabase/` is committed.
+
+### Drive sync
+
+- Replace the placeholder `WEB_CLIENT_ID` in
+  `app/src/main/kotlin/com/example/aiinbox/sync/DriveAuthRepository.kt`
+  with the real OAuth 2.0 web client ID from the production Google Cloud
+  project, and register the release SHA-1 fingerprint as an Android
+  variant of the same client.
+- Implement the silent token refresh path (`refreshAccessTokenInternal`)
+  before the first wide release; v1 ships path (b) where the user
+  re-links every ~1 h.
+
+### LLM model distribution
+
+- Land the HF-token-aware in-app `ModelDownloadWorker` so users without
+  `adb` access can download models. The current path requires
+  `scripts/push-model.sh`, which is unusable for non-developers.
+
 ## Useful one-liners
 
     # Watch only this app's interesting tags
