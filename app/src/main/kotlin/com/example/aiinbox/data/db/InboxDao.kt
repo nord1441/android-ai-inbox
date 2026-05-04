@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
@@ -20,6 +21,9 @@ interface InboxDao {
 
     @Update
     suspend fun update(item: InboxItem)
+
+    @Upsert
+    suspend fun upsert(item: InboxItem)
 
     @Delete
     suspend fun delete(item: InboxItem)
@@ -117,6 +121,27 @@ interface InboxDao {
     @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
     suspend fun getByIdWithAttachments(id: String): InboxItemWithAttachments?
 
+    /**
+     * Sync-only point lookup that returns even tombstoned rows. Drive sync
+     * needs to read deleted_at-set rows so it can publish their tombstones
+     * to the manifest.
+     */
+    @Transaction
+    @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
+    suspend fun getWithAttachmentsIncludingDeleted(id: String): InboxItemWithAttachments?
+
+    /**
+     * Sync-only scan: every id with its (updated_at, deleted_at, last_synced_at)
+     * triple, including tombstones. Used by SyncEngine.diff against the remote
+     * manifest.
+     */
+    @Query("SELECT id, updated_at AS updatedAt, deleted_at AS deletedAt, last_synced_at AS lastSyncedAt FROM inbox_items")
+    suspend fun allRefsIncludingDeleted(): List<InboxRefRow>
+
+    /** Update only the last_synced_at column for items the sync engine just touched. */
+    @Query("UPDATE inbox_items SET last_synced_at = :syncedAt WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<String>, syncedAt: Long)
+
     @Transaction
     @Query("SELECT * FROM inbox_items WHERE id = :id LIMIT 1")
     fun observeByIdWithAttachments(id: String): Flow<InboxItemWithAttachments?>
@@ -186,3 +211,15 @@ interface InboxDao {
     @Query("UPDATE inbox_items SET deleted_at = :deletedAt, updated_at = :deletedAt WHERE id = :id")
     suspend fun markDeleted(id: String, deletedAt: Long)
 }
+
+/**
+ * Lightweight row carrier for [InboxDao.allRefsIncludingDeleted]. Lives at
+ * file scope so the DAO can return it directly without nested-type
+ * resolution headaches.
+ */
+data class InboxRefRow(
+    val id: String,
+    val updatedAt: Long,
+    val deletedAt: Long?,
+    val lastSyncedAt: Long?,
+)

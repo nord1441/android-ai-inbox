@@ -76,6 +76,44 @@ class EncryptedImageStore @Inject constructor(
     /** Returns true if the encrypted file for [name] exists on disk. */
     fun exists(name: String): Boolean = File(baseDir, name).exists()
 
+    /**
+     * Decrypt and return the full file contents as a ByteArray, or null if
+     * the file does not exist. Used by Drive sync push to read bytes back
+     * from the local encrypted store before uploading them as plain bytes
+     * to Drive.
+     */
+    fun readBytes(name: String): ByteArray? {
+        if (!exists(name)) return null
+        return read(name).use { it.readBytes() }
+    }
+
+    /**
+     * Encrypt and write [plainBytes] under the explicit [name] (overwriting
+     * if present). Drive sync pull uses this to land remote bytes locally
+     * under the same encryptedFilename the remote envelope refers to —
+     * keeping the attachments DB row valid across devices.
+     *
+     * EncryptedFile.Builder fails if the target file exists, so any prior
+     * file is removed first.
+     */
+    fun writeWithName(name: String, plainBytes: ByteArray) {
+        baseDir.mkdirs()
+        val file = File(baseDir, name)
+        if (file.exists()) file.delete()
+        val encrypted = EncryptedFile.Builder(
+            context,
+            file,
+            masterKey,
+            EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB,
+        ).build()
+        try {
+            encrypted.openFileOutput().use { it.write(plainBytes) }
+        } catch (t: Throwable) {
+            runCatching { file.delete() }
+            throw t
+        }
+    }
+
     private companion object {
         const val KEY_ALIAS_ATTACHMENT = "ai_inbox_attachment_master_key"
     }

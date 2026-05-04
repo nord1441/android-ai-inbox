@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Upsert
 
 @Dao
 interface AttachmentDao {
@@ -13,6 +14,9 @@ interface AttachmentDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(attachment: Attachment)
+
+    @Upsert
+    suspend fun upsertAll(attachments: List<Attachment>)
 
     @Query("SELECT * FROM attachments WHERE item_id = :itemId AND deleted_at IS NULL ORDER BY ordering ASC")
     suspend fun getForItem(itemId: String): List<Attachment>

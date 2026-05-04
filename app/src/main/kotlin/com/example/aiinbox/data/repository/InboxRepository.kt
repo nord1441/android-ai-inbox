@@ -4,12 +4,16 @@ import androidx.annotation.VisibleForTesting
 import com.example.aiinbox.data.db.Attachment
 import com.example.aiinbox.data.db.AttachmentDao
 import com.example.aiinbox.data.db.AttachmentKind
+import com.example.aiinbox.data.db.ExtractedEvent
 import com.example.aiinbox.data.db.InboxDao
 import com.example.aiinbox.data.db.InboxItem
 import com.example.aiinbox.data.db.InboxItemWithAttachments
+import com.example.aiinbox.data.db.InboxRefRow
 import com.example.aiinbox.data.db.ItemStatus
 import com.example.aiinbox.data.storage.EncryptedImageStore
 import com.example.aiinbox.llm.SummarizeResult
+import com.example.aiinbox.sync.SyncEngine
+import com.example.aiinbox.sync.SyncEnvelope
 import com.example.aiinbox.ui.inbox.InboxFilter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -266,6 +270,133 @@ class InboxRepository @Inject constructor(
 
     suspend fun updateAttachmentOcr(attachmentId: String, ocrText: String?) {
         attachmentDao.updateOcr(attachmentId, ocrText, System.currentTimeMillis())
+    }
+
+    // ===== Drive sync surface =====
+
+    /**
+     * Every local item id with its (updated_at, deleted_at, last_synced_at)
+     * triple, including tombstones. Drive sync compares this against the
+     * remote manifest to compute push/pull/skip per item.
+     */
+    suspend fun allLocalRefs(): List<SyncEngine.LocalRef> =
+        dao.allRefsIncludingDeleted().map { row: InboxRefRow ->
+            SyncEngine.LocalRef(row.id, row.updatedAt, row.deletedAt, row.lastSyncedAt)
+        }
+
+    /** Stamps last_synced_at for each id the sync engine just touched. */
+    suspend fun markSynced(ids: List<String>, syncedAt: Long) {
+        if (ids.isNotEmpty()) dao.markSynced(ids, syncedAt)
+    }
+
+    /**
+     * Apply a Drive-sourced envelope to the local DB. LWW already chose this
+     * envelope as the winner, so we overwrite the local row unconditionally.
+     */
+    suspend fun upsertFromSync(env: SyncEnvelope) {
+        val item = InboxItem(
+            id = env.id,
+            originalText = env.originalText,
+            originalSubject = env.originalSubject,
+            sourceApp = env.sourceApp,
+            receivedAt = env.receivedAt,
+            status = ItemStatus.valueOf(env.status),
+            processingAttempts = env.processingAttempts,
+            lastError = env.lastError,
+            title = env.title,
+            summary = env.summary,
+            category = env.category,
+            tags = env.tags,
+            people = env.people,
+            places = env.places,
+            urls = env.urls,
+            event = env.event?.let {
+                ExtractedEvent(
+                    title = it.title,
+                    startMillis = it.startMillis,
+                    endMillis = it.endMillis,
+                    location = it.location,
+                    confidence = it.confidence,
+                )
+            },
+            userEditedFields = env.userEditedFields.toSet(),
+            updatedAt = env.updatedAt,
+            deletedAt = env.deletedAt,
+            lastSyncedAt = System.currentTimeMillis(),
+        )
+        dao.upsert(item)
+        val attachments = env.attachments.map { a ->
+            Attachment(
+                id = a.id,
+                itemId = a.itemId,
+                ordering = a.ordering,
+                kind = AttachmentKind.valueOf(a.kind),
+                encryptedFilename = a.encryptedFilename,
+                mimeType = a.mimeType,
+                widthPx = a.widthPx,
+                heightPx = a.heightPx,
+                byteSize = a.byteSize,
+                ocrText = a.ocrText,
+                ocrCompletedAt = a.ocrCompletedAt,
+                createdAt = a.createdAt,
+                deletedAt = a.deletedAt,
+            )
+        }
+        if (attachments.isNotEmpty()) attachmentDao.upsertAll(attachments)
+    }
+
+    /**
+     * Build the SyncEnvelope wire payload for [id]. Includes tombstoned
+     * items so a deletion can propagate via push.
+     */
+    suspend fun getEnvelope(id: String): SyncEnvelope? {
+        val full = dao.getWithAttachmentsIncludingDeleted(id) ?: return null
+        return SyncEnvelope(
+            id = full.item.id,
+            originalText = full.item.originalText,
+            originalSubject = full.item.originalSubject,
+            sourceApp = full.item.sourceApp,
+            receivedAt = full.item.receivedAt,
+            status = full.item.status.name,
+            processingAttempts = full.item.processingAttempts,
+            lastError = full.item.lastError,
+            title = full.item.title,
+            summary = full.item.summary,
+            category = full.item.category,
+            tags = full.item.tags,
+            people = full.item.people,
+            places = full.item.places,
+            urls = full.item.urls,
+            event = full.item.event?.let {
+                SyncEnvelope.EnvelopeEvent(
+                    title = it.title,
+                    startMillis = it.startMillis,
+                    endMillis = it.endMillis,
+                    location = it.location,
+                    confidence = it.confidence,
+                )
+            },
+            userEditedFields = full.item.userEditedFields.toList(),
+            updatedAt = full.item.updatedAt,
+            deletedAt = full.item.deletedAt,
+            attachments = full.attachments.map { a ->
+                SyncEnvelope.EnvelopeAttachment(
+                    id = a.id,
+                    itemId = a.itemId,
+                    encryptedFilename = a.encryptedFilename,
+                    mimeType = a.mimeType,
+                    widthPx = a.widthPx,
+                    heightPx = a.heightPx,
+                    byteSize = a.byteSize,
+                    kind = a.kind.name,
+                    ordering = a.ordering,
+                    ocrText = a.ocrText,
+                    ocrCompletedAt = a.ocrCompletedAt,
+                    createdAt = a.createdAt,
+                    deletedAt = a.deletedAt,
+                )
+            },
+        )
     }
 
     /**

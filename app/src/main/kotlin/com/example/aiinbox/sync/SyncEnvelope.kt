@@ -47,6 +47,8 @@ data class SyncEnvelope(
         @SerialName("item_id") val itemId: String,
         @SerialName("encrypted_filename") val encryptedFilename: String,
         @SerialName("mime_type") val mimeType: String,
+        @SerialName("width_px") val widthPx: Int = 0,
+        @SerialName("height_px") val heightPx: Int = 0,
         @SerialName("byte_size") val byteSize: Long,
         val kind: String,
         val ordering: Int,
