@@ -68,6 +68,47 @@ class DriveApiClient @Inject constructor(
         }
     }
 
+    /**
+     * List every file in the appDataFolder spaces. Used by SyncWorker to build
+     * a name → fileId lookup so applyPull can dereference items/X.json and
+     * attachments/X.bin without one find call per file.
+     *
+     * Iterates pageToken until the server reports no nextPageToken.
+     */
+    suspend fun listAllFileNamesAndIds(): Map<String, String> {
+        val out = mutableMapOf<String, String>()
+        var pageToken: String? = null
+        do {
+            val url = baseUrl.newBuilder()
+                .addPathSegments("drive/v3/files")
+                .addQueryParameter("spaces", "appDataFolder")
+                .addQueryParameter("fields", "nextPageToken,files(id,name)")
+                .addQueryParameter("pageSize", "1000")
+                .apply { pageToken?.let { addQueryParameter("pageToken", it) } }
+                .build()
+            val req = Request.Builder()
+                .url(url)
+                .get()
+                .header("Authorization", "Bearer ${requireToken()}")
+                .build()
+            pageToken = client.newCall(req).executeSuspending().use { resp ->
+                when {
+                    resp.code == 401 -> error("auth required")
+                    resp.code !in 200..299 -> error("Drive list failed: ${resp.code} ${resp.message}")
+                    else -> {
+                        val root = json.parseToJsonElement(resp.body!!.string()).jsonObject
+                        root["files"]?.jsonArray?.forEach { el ->
+                            val obj = el.jsonObject
+                            out[obj["name"]!!.jsonPrimitive.content] = obj["id"]!!.jsonPrimitive.content
+                        }
+                        root["nextPageToken"]?.jsonPrimitive?.content
+                    }
+                }
+            }
+        } while (pageToken != null)
+        return out
+    }
+
     /** GET /drive/v3/files/{fileId}?alt=media with optional If-None-Match */
     suspend fun downloadBytes(fileId: String, ifNoneMatchEtag: String? = null): DownloadResult {
         val url = baseUrl.newBuilder()

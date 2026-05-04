@@ -24,6 +24,14 @@ interface AttachmentDao {
     /** Alias for [getForItem] used in tests. */
     suspend fun listForItem(itemId: String): List<Attachment> = getForItem(itemId)
 
+    /**
+     * Sync-only: returns attachments for an item including tombstones. Used
+     * by the manifest builder so deletes can be reflected in the published
+     * manifest.
+     */
+    @Query("SELECT * FROM attachments WHERE item_id = :itemId ORDER BY ordering ASC")
+    suspend fun listForItemIncludingDeleted(itemId: String): List<Attachment>
+
     @Query("UPDATE attachments SET ocr_text = :ocrText, ocr_completed_at = :completedAt WHERE id = :id")
     suspend fun updateOcr(id: String, ocrText: String?, completedAt: Long)
 

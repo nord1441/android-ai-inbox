@@ -1,5 +1,7 @@
 package com.example.aiinbox.sync
 
+import com.example.aiinbox.data.db.AttachmentDao
+import com.example.aiinbox.data.db.InboxDao
 import com.example.aiinbox.data.repository.InboxRepository
 import com.example.aiinbox.data.storage.EncryptedImageStore
 import kotlinx.serialization.json.Json
@@ -20,6 +22,8 @@ class SyncEngine @Inject constructor(
     private val api: DriveApiClient,
     private val repository: InboxRepository,
     private val imageStore: EncryptedImageStore,
+    private val inboxDao: InboxDao,
+    private val attachmentDao: AttachmentDao,
 ) {
 
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
@@ -58,6 +62,26 @@ class SyncEngine @Inject constructor(
                 imageStore.writeWithName(att.encryptedFilename, attBody.bytes)
             }
         }
+    }
+
+    /**
+     * Build a fresh manifest reflecting current local state (including
+     * tombstones). Called by [SyncWorker] after applyPull/applyPush so the
+     * published manifest is the post-sync ground truth.
+     */
+    suspend fun buildManifest(generatedAt: Long): SyncManifest {
+        val refs = inboxDao.allRefsIncludingDeleted()
+        val items = refs.map { ref ->
+            val atts = attachmentDao.listForItemIncludingDeleted(ref.id)
+            SyncManifest.ManifestItem(
+                id = ref.id,
+                updatedAt = ref.updatedAt,
+                deletedAt = ref.deletedAt,
+                attachmentIds = atts.map { it.id },
+                attachmentByteSizes = atts.map { it.byteSize },
+            )
+        }
+        return SyncManifest(generatedAt = generatedAt, items = items)
     }
 
     /**
