@@ -29,6 +29,8 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     @Inject lateinit var modelManager: ModelManager
+    @Inject lateinit var driveAuthRepository: com.example.aiinbox.sync.DriveAuthRepository
+    @Inject lateinit var syncCoordinator: com.example.aiinbox.sync.SyncCoordinator
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -42,6 +44,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         maybeRequestPostNotifications()
+        maybeKickOffSync()
         val openItemId = intent.getStringExtra(NotificationHelper.EXTRA_OPEN_ITEM_ID)
 
         // Diagnostic: show what ModelManager is actually checking and finding.
@@ -92,6 +95,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * If the user has linked a Drive account, kick off an immediate sync
+     * (so a fresh launch pulls anything new) and re-enroll the periodic
+     * worker per the persisted interval. The persisted interval lives in
+     * the same SharedPreferences that SettingsViewModel writes; we read it
+     * directly here to avoid taking a dependency on the ViewModel from
+     * an Activity.
+     */
+    private fun maybeKickOffSync() {
+        if (driveAuthRepository.currentEmail() == null) return
+        syncCoordinator.requestImmediateSync()
+        val prefs = getSharedPreferences("ai_inbox_sync_prefs", MODE_PRIVATE)
+        val stored = prefs.getLong("sync_interval_minutes", 30L)
+        val interval: Long? = if (stored == -1L) null else stored
+        syncCoordinator.setPeriodicInterval(interval)
     }
 
     private fun maybeRequestPostNotifications() {

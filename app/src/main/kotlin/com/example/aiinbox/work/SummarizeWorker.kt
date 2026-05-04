@@ -26,6 +26,7 @@ class SummarizeWorker @AssistedInject constructor(
     private val notifier: NotificationHelper,
     private val ocr: OcrEngine,
     private val imageStore: EncryptedImageStore,
+    private val syncCoordinator: com.example.aiinbox.sync.SyncCoordinator,
 ) : CoroutineWorker(appContext, params) {
 
     override suspend fun doWork(): Result {
@@ -81,6 +82,7 @@ class SummarizeWorker @AssistedInject constructor(
             android.util.Log.i(TAG, "Empty content, completing with placeholder")
             repository.applyPlaceholderResult(itemId, attachments.size)
             repository.getById(itemId)?.let { notifier.showCompletion(it) }
+            syncCoordinator.requestImmediateSync()
             return Result.success()
         }
 
@@ -97,6 +99,7 @@ class SummarizeWorker @AssistedInject constructor(
                     android.util.Log.i(TAG, "Summarize success. summary=${res.summary?.take(40)}")
                     repository.applySummarizeResult(itemId, res)
                     repository.getById(itemId)?.let { notifier.showCompletion(it) }
+                    syncCoordinator.requestImmediateSync()
                     Result.success()
                 },
                 onFailure = { t ->
