@@ -99,19 +99,19 @@ adb pull /sdcard/ai_inbox_screen.png art/screenshots/01-inbox.png
 
 ## Feature graphic (1024×500 PNG, 必須)
 
-> 未作成。`art/feature-graphic.png` に配置予定。
+`art/feature-graphic.png` に配置済（SVG 元データは `art/feature-graphic.svg`）。
 
-訴求コピー候補:
+採用デザイン:
+- 黒背景 (#0d0d0d) + 白い「lowercase i」モチーフ + 赤の tittle（アイコンの配色を反転）
+- 左寄せに大きな「i」、右側にヘッドライン「クラウド送信ゼロ」+ サブコピー 2 行
+- フォント: 端末の Hiragino Sans / Noto Sans CJK JP / YuGothic を fallback で指定
 
-- 「クラウド送信ゼロ」
-- 「あなたのデータは端末から出ません」
-- 「機内モードでも動く AI インボックス」
-- 「OCR も要約も、すべて端末の中で」
+文言（PNG 内部の埋め込みテキスト）:
+- ヘッドライン: クラウド送信ゼロ
+- サブ 1: あなたのデータは端末から出ません
+- サブ 2: 端末内 AI が要約・OCR・検索
 
-デザイン方針:
-- 黒背景 + 白文字（アイコンと配色を揃える、tittle が赤）
-- アイコンと同じ「lowercase i」モチーフを左寄せ大きく配置
-- 右側にコピー（複数行可、最大 2 ステートメント）
+差し替え方法: SVG を編集 → `rsvg-convert -w 1024 -h 500 art/feature-graphic.svg -o art/feature-graphic.png`
 
 ---
 

@@ -104,7 +104,7 @@
   - [x] short description (38 文字)
   - [x] full description (Play 整合済)
   - [ ] phone screenshots × 最低 2 枚（撮影予定: Inbox / 詳細 / 検索 / 設定）
-  - [ ] feature graphic 1024×500 PNG
+  - [x] feature graphic 1024×500 PNG → `art/feature-graphic.png`（SVG 元データは `art/feature-graphic.svg`）
 - [ ] **Internal testing track から開始** → Closed → Production の順で慣らす
 - [ ] **Play App Signing 有効化**（upload key を生成して登録）
 

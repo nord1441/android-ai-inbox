@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 500" width="1024" height="500">
+  <rect width="1024" height="500" fill="#0d0d0d"/>
+  <rect x="180" y="170" width="46" height="240" fill="#ffffff"/>
+  <circle cx="203" cy="110" r="32" fill="#e53935"/>
+  <text x="320" y="220" font-family="'Hiragino Sans', 'Noto Sans CJK JP', 'YuGothic', sans-serif"
+        font-size="76" font-weight="700" fill="#ffffff">クラウド送信ゼロ</text>
+  <text x="320" y="290" font-family="'Hiragino Sans', 'Noto Sans CJK JP', 'YuGothic', sans-serif"
+        font-size="36" font-weight="400" fill="#bdbdbd">あなたのデータは端末から出ません</text>
+  <text x="320" y="345" font-family="'Hiragino Sans', 'Noto Sans CJK JP', 'YuGothic', sans-serif"
+        font-size="36" font-weight="400" fill="#bdbdbd">端末内 AI が要約・OCR・検索</text>
+</svg>
