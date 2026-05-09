@@ -99,12 +99,12 @@
   - 推奨選択ガイド: [`docs/play-console-forms.md`](play-console-forms.md) §2
 - [ ] **Permission の使用説明**（特に `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE_DATA_SYNC`）
   - 申告文ドラフト: [`docs/play-console-forms.md`](play-console-forms.md) §3
-- [ ] **ストアリスティング素材**:
-  - short description（80 文字）
-  - full description（4000 文字）
-  - phone screenshots × 最低 2 枚
-  - feature graphic 1024×500 PNG
-  - 文言素案は下記「ストアリスティング文言素案」を参照
+- [x] **ストアリスティング素材**:
+  - 提出版テキストは [`docs/store-listing.md`](store-listing.md) に集約
+  - [x] short description (38 文字)
+  - [x] full description (Play 整合済)
+  - [x] phone screenshots × 4 枚 → `art/screenshots/01-inbox.png` / `02-detail.png` / `03-search.png` / `04-settings.png`（1260×2800、テックニュース 5 件サンプルで撮影）
+  - [x] feature graphic 1024×500 PNG → `art/feature-graphic.png`（SVG 元データは `art/feature-graphic.svg`）
 - [ ] **Internal testing track から開始** → Closed → Production の順で慣らす
 - [ ] **Play App Signing 有効化**（upload key を生成して登録）
 
