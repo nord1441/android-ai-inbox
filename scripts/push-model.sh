@@ -17,12 +17,12 @@
 #     variant: e2b | e4b   (inferred from the source filename if omitted)
 #
 # Environment:
-#   PKG       Override target package (default: com.example.aiinbox.debug)
+#   PKG       Override target package (default: uk.nordtek.aiinbox.debug)
 #   ADB       Override adb binary path (default: adb on PATH)
 
 set -euo pipefail
 
-PKG="${PKG:-com.example.aiinbox.debug}"
+PKG="${PKG:-uk.nordtek.aiinbox.debug}"
 ADB="${ADB:-adb}"
 
 usage() {
