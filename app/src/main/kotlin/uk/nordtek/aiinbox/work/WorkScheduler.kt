@@ -23,10 +23,12 @@ class WorkScheduler @Inject constructor(
                     .setRequiresBatteryNotLow(true)
                     .build()
             )
-            // No setExpedited(): SummarizeWorker doesn't implement
-            // getForegroundInfoAsync(), and WorkManager silently drops or fails
-            // expedited requests without it. Regular WorkRequest runs fine for
-            // LLM inference (which is minutes-long anyway).
+            // No setExpedited(): expedited work has a tight per-app daily quota
+            // (~10 minutes on most devices) which a multi-job LLM session can
+            // exhaust quickly. Regular WorkRequest runs fine for LLM inference;
+            // foreground promotion happens inside the worker via setForeground()
+            // which is what grants the BFSL needed to start LlmInferenceService
+            // on Android 14+.
             .build()
         try {
             WorkManager.getInstance(context)

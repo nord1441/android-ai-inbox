@@ -1,10 +1,18 @@
 package uk.nordtek.aiinbox.work
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.graphics.BitmapFactory
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.content.getSystemService
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import uk.nordtek.aiinbox.R
 import uk.nordtek.aiinbox.data.repository.InboxRepository
 import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
 import uk.nordtek.aiinbox.llm.ContentHintDetector
@@ -30,7 +38,58 @@ class SummarizeWorker @AssistedInject constructor(
     private val syncCoordinator: FsSyncCoordinator,
 ) : CoroutineWorker(appContext, params) {
 
+    /**
+     * Promotes the worker to a foreground service. Called by WorkManager when needed
+     * (we also call setForeground() ourselves at the top of doWork below).
+     *
+     * We share channel + notification ID with LlmInferenceService so the two FGSes
+     * appear as a single, evolving notification to the user rather than stacking.
+     */
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        ensureChannel()
+        val notification = NotificationCompat.Builder(applicationContext, NOTIF_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(applicationContext.getString(R.string.app_name))
+            .setContentText(applicationContext.getString(R.string.notification_llm_service_running))
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true)
+            .build()
+        return ForegroundInfo(
+            NOTIF_ID,
+            notification,
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC else 0,
+        )
+    }
+
+    private fun ensureChannel() {
+        val nm = applicationContext.getSystemService<NotificationManager>() ?: return
+        nm.createNotificationChannel(
+            NotificationChannel(
+                NOTIF_CHANNEL_ID,
+                applicationContext.getString(R.string.notification_channel_llm_service),
+                NotificationManager.IMPORTANCE_LOW,
+            )
+        )
+    }
+
     override suspend fun doWork(): Result {
+        // Promote ourselves to a foreground worker first thing. Without this, on
+        // Android 14+ (BFSL rules) the subsequent startForegroundService() inside
+        // LlmServiceClient.bind() is denied with "Background started FGS:
+        // Disallowed ... uidBFSL: n/a". A foreground worker grants the app's UID
+        // temporary BFSL, which is what allows the LlmInferenceService FGS to
+        // launch from a Worker that is otherwise running in the background (the
+        // common case: user shares from another app and never opens AI Inbox).
+        // setForeground may legitimately fail in edge cases (e.g., the system
+        // already killed the worker for memory pressure); the LLM call below
+        // will then surface the denial loudly via the existing retry path.
+        try {
+            setForeground(getForegroundInfo())
+        } catch (e: Throwable) {
+            android.util.Log.w(TAG, "setForeground skipped: ${e.message}")
+        }
+
         val itemId = inputData.getString(KEY_ITEM_ID) ?: return Result.failure()
         val full = repository.getItemWithAttachments(itemId) ?: return Result.failure()
         val item = full.item
@@ -126,5 +185,11 @@ class SummarizeWorker @AssistedInject constructor(
         private const val TAG = "SummarizeWorker"
         const val KEY_ITEM_ID = "item_id"
         private const val MAX_RETRIES = 1
+        // Same channel + ID as LlmInferenceService so the two FGSes (this worker's
+        // promotion notification and the LLM service's own foreground notification)
+        // render as a single notification entry that updates in place rather than
+        // stacking to two separate rows.
+        private const val NOTIF_CHANNEL_ID = "llm_service"
+        private const val NOTIF_ID = 0x10A1
     }
 }
