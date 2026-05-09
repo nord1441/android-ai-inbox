@@ -59,7 +59,9 @@
 
 - [x] `LICENSE` ファイルをリポジトリ直下に配置（Apache-2.0、Copyright 2026 nord14541）
 - [x] `README.md` を拡充（概要、機能、プライバシー方針、ビルド手順、ドキュメント索引、ライセンス）。スクリーンショットは Play Store 提出用素材として別途用意
-- [ ] release ビルドで手動疎通スモーク（モデル DL → 共有 → 要約 → 削除 → FS 同期）
+- [x] release ビルドで手動疎通スモーク（モデル DL → 共有 → 要約 → 削除 → FS 同期）
+  - 実機 (A024 / Android 16) で完走確認: 署名 release APK install → R8/Hilt/Compose/Room 起動 OK、share intent 取り込み、Gemma e4b 3.66 GB DL、要約 (TTFT 12.8s, gen 15.8s, 11.7 tps)、削除 + Undo、SAF 経由 FS sync
+  - **副産物**: `SummarizeWorker` が Android 14+ の Background-FGS-Launch 制限で `LlmInferenceService` を起動できない latent bug を検出、本コミットで修正済み
 - [ ] Adaptive icon の foreground にブランドマークを入れる（Play のアイコンガイドライン）
 
 ---
