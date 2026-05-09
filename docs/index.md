@@ -1,0 +1,23 @@
+---
+title: AI Inbox
+---
+
+# AI Inbox
+
+端末内で完結する AI インボックス。共有メニューから取り込んだテキスト・スクリーンショットを、端末上で動作する小型 LLM と OCR が要約・分類・タグ付けします。**ユーザーデータが外部に送信されることはありません**。
+
+- アプリのリポジトリ / ソースコード: <https://github.com/nord1441/android-ai-inbox>
+- ライセンス: [Apache License 2.0](https://github.com/nord1441/android-ai-inbox/blob/main/LICENSE)
+- [プライバシーポリシー](privacy-policy.html)
+
+## 設計目標
+
+「ユーザーデータが端末から一切出ない」を最上位の制約として、すべての機能をその上に組んでいます:
+
+- 取り込みは Android の共有メニュー経由（テキスト / 画像）
+- OCR は **ML Kit Text Recognition v2**（端末内）
+- 要約・分類・タグ・人物・場所・URL・予定の抽出は **Gemma 4** を **LiteRT-LM** で端末内推論
+- DB は **SQLCipher (AES-256)** で全文暗号化、添付画像は **EncryptedFile (AES-256-GCM)** で暗号化保存
+- クラッシュ解析・利用統計・広告 SDK は組み込まない
+
+外部通信はモデル / モジュールのダウンロードのみで、ダウンロード方向です。詳細は[プライバシーポリシー](privacy-policy.html)を参照してください。

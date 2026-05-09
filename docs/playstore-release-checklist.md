@@ -69,8 +69,16 @@
 ## Play Console 側の準備（コードに手は入らないが提出に必須）
 
 - [ ] **プライバシーポリシーの公開 URL**
-  - GitHub Pages / Notion 公開ページ等で OK
-  - 含めるべき内容:
+  - 草稿は [`docs/privacy-policy.md`](privacy-policy.md) に作成済み（連絡先: nordtek14@gmail.com）
+  - ホスティング方針: GitHub Pages を /docs から発行 (`docs/_config.yml` で superpowers/ 等の内部ドキュメントは exclude 済み)
+  - **手作業での GitHub Pages 有効化手順**（リポジトリ管理者がブラウザで一度だけ実行）:
+    1. <https://github.com/nord1441/android-ai-inbox/settings/pages> を開く
+    2. "Build and deployment" → "Source" を **"Deploy from a branch"** に
+    3. "Branch" を **"main"** / **"/docs"** に設定 → Save
+    4. 数分待つと <https://nord1441.github.io/android-ai-inbox/> が公開される
+    5. プライバシーポリシー直リンク: <https://nord1441.github.io/android-ai-inbox/privacy-policy.html>
+  - Play Console の「アプリのプライバシーポリシー」フィールドに上記直リンクを貼る
+  - 草稿に含めた要素:
     - 「ユーザーデータ（受信テキスト・画像・OCR結果・要約）はすべて端末ローカルに保存され、外部に送信されない」
     - 「外部通信は **モデル/モジュールのダウンロードのみ**：① Gemma 4 重みを Hugging Face から、② ML Kit Text Recognition のスクリプトモジュール（Latin / Japanese）を Google Play Services から。いずれもダウンロード方向のみで、ユーザーデータのアップロードは伴わない」
     - 「初回ダウンロード以降は機内モードでも全機能（取り込み・OCR・要約・検索）が動作する」
