@@ -94,8 +94,11 @@
   - データ削除手段: アプリ内から個別削除可、アプリアンインストールで全消去
 
 - [ ] **Content rating questionnaire**（IARC アンケート、数問）
+  - 推奨回答ガイド: [`docs/play-console-forms.md`](play-console-forms.md) §1
 - [ ] **Target audience**（13+ 等）
+  - 推奨選択ガイド: [`docs/play-console-forms.md`](play-console-forms.md) §2
 - [ ] **Permission の使用説明**（特に `POST_NOTIFICATIONS`, `FOREGROUND_SERVICE_DATA_SYNC`）
+  - 申告文ドラフト: [`docs/play-console-forms.md`](play-console-forms.md) §3
 - [ ] **ストアリスティング素材**:
   - short description（80 文字）
   - full description（4000 文字）
