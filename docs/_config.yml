@@ -17,6 +17,7 @@ exclude:
   - release-signing.md
   - release-versioning.md
   - data-safety-guide.md
+  - play-console-forms.md
   - development.md
   - superpowers/
   - "*.gitignore"
