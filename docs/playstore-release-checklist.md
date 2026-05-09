@@ -87,8 +87,8 @@
     - 「問い合わせ先」
 
 - [ ] **Data Safety フォームの記入**
-  - 収集データ: なし
-  - 共有データ: なし
+  - フォーム入力ガイドを [`docs/data-safety-guide.md`](data-safety-guide.md) に作成済み（Play Console の質問項目ごとに推奨回答と根拠を記述）
+  - 収集データ: なし / 共有データ: なし
   - ネット利用: あり（**ダウンロードのみ** — Gemma 重み from HF, ML Kit スクリプトモジュール from Play Services）。ユーザーデータの送信なし
   - 暗号化: 保存時 AES-256（SQLCipher + EncryptedFile）、転送時 HTTPS
   - データ削除手段: アプリ内から個別削除可、アプリアンインストールで全消去
