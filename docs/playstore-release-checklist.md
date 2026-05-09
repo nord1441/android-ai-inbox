@@ -45,10 +45,10 @@
   - Data Safety フォームでネット利用（モデル DL のみ）を申告
   - 任意改善: Play Asset Delivery（Asset Pack）を使うとユーザ体験が良くなる（Phase 2 候補）
 
-- [ ] **`versionCode` の運用ルール決定**
-  - 現在 `versionCode = 1`, `versionName = "0.1.0"`
-  - Play は同一 versionCode の AAB を弾くので release ごとに +1 必須
-  - Git tag 連動 / 手動更新 / CI 自動化のどれにするか決める
+- [x] **`versionCode` の運用ルール決定**
+  - `versionCode` は `git rev-list --count HEAD` から自動導出（commit ごとに単調増加、重複アップロード不可能）
+  - `versionName` は `app/build.gradle.kts` に semver で手動記載（人間判断が必要）
+  - 詳細: [`docs/release-versioning.md`](release-versioning.md)
 
 - [x] **`kotlinx-coroutines-play-services` 依存の見直し**
   - 調査結果: 削除不可。ML Kit OCR が必須使用

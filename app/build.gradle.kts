@@ -18,6 +18,27 @@ val hasReleaseSigning = listOf(
     releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword,
 ).all { !it.isNullOrBlank() }
 
+// versionCode is auto-derived from git commit count. Monotonically increases
+// commit-by-commit, so duplicate uploads to Play Console are structurally
+// impossible. Falls back to 1 when git is unavailable (source archive build,
+// non-checkout environment). See docs/release-versioning.md.
+// CI caveat: shallow clones (default in actions/checkout@v4) under-count.
+// Use `fetch-depth: 0` for any release-building CI job.
+val gitCommitCount: Int = try {
+    ProcessBuilder("git", "rev-list", "--count", "HEAD")
+        .directory(rootDir)
+        .redirectErrorStream(true)
+        .start()
+        .inputStream
+        .bufferedReader()
+        .readText()
+        .trim()
+        .toIntOrNull()
+        ?: 1
+} catch (_: Exception) {
+    1
+}
+
 android {
     namespace = "uk.nordtek.aiinbox"
     compileSdk = 35
@@ -26,7 +47,7 @@ android {
         applicationId = "uk.nordtek.aiinbox"
         minSdk = 33
         targetSdk = 35
-        versionCode = 1
+        versionCode = gitCommitCount
         versionName = "0.1.0"
         testInstrumentationRunner = "uk.nordtek.aiinbox.HiltTestRunner"
         vectorDrawables { useSupportLibrary = true }
