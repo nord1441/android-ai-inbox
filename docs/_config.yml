@@ -1,0 +1,22 @@
+# Jekyll config for the GitHub Pages site published from this /docs directory.
+# Site URL: https://nord1441.github.io/android-ai-inbox/
+#
+# The site exists primarily to host the privacy policy required by Play Store.
+# Keep the public surface small: explicitly exclude internal-only docs
+# (release checklist, design specs, work plans, manual tests) so they don't
+# appear on the public site even though they live in the same /docs tree.
+
+title: AI Inbox
+description: 端末内で完結する AI インボックス
+theme: jekyll-theme-minimal
+
+# Files / dirs in /docs that should NOT be published to the Pages site.
+# Add new internal docs here when introduced.
+exclude:
+  - playstore-release-checklist.md
+  - release-signing.md
+  - release-versioning.md
+  - development.md
+  - superpowers/
+  - "*.gitignore"
+  - "*.gitkeep"
