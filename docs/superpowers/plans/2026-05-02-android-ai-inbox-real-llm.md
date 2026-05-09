@@ -149,7 +149,7 @@ git commit -m "build: add MediaPipe Tasks GenAI and OkHttp dependencies"
 - [ ] **Step 1: テスト**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -182,7 +182,7 @@ class RamDetectorTest {
 - [ ] **Step 2: 実装**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import android.app.ActivityManager
 import android.content.Context
@@ -210,7 +210,7 @@ object RamDetector {
 - [ ] **Step 3: テスト通過**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.RamDetectorTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.RamDetectorTest
 ```
 Expected: PASS
 
@@ -235,7 +235,7 @@ git commit -m "feat(llm): add RamDetector for Gemma 4 variant selection"
 - [ ] **Step 1: テスト**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -283,7 +283,7 @@ class ModelManagerTest {
 - [ ] **Step 2: 実装**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -346,7 +346,7 @@ class ModelManager @Inject constructor(
 - [ ] **Step 3: テスト通過**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.ModelManagerTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.ModelManagerTest
 ```
 Expected: PASS
 
@@ -371,7 +371,7 @@ git commit -m "feat(llm): add ModelManager for .task file lifecycle"
 - [ ] **Step 1: 実装**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import android.content.Context
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
@@ -477,7 +477,7 @@ class MediaPipeLlmEngine @Inject constructor(
 
 `app/src/androidTest/kotlin/com/example/aiinbox/llm/MediaPipeLlmEngineTest.kt`:
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -528,11 +528,11 @@ class MediaPipeLlmEngineTest {
 }
 ```
 
-**実行方法:** モデルファイルを `adb push` で `/data/data/com.example.aiinbox.debug/no_backup/files/models/gemma-4-e2b-q4km.task` に配置してから：
+**実行方法:** モデルファイルを `adb push` で `/data/data/uk.nordtek.aiinbox.debug/no_backup/files/models/gemma-4-e2b-q4km.task` に配置してから：
 ```bash
 ./gradlew :app:connectedDebugAndroidTest \
   -Pandroid.testInstrumentationRunnerArguments.size=large \
-  --tests com.example.aiinbox.llm.MediaPipeLlmEngineTest
+  --tests uk.nordtek.aiinbox.llm.MediaPipeLlmEngineTest
 ```
 モデルがなければ `assumeTrue` でスキップされる（CI安全）。
 
@@ -566,7 +566,7 @@ git commit -m "feat(llm): add MediaPipeLlmEngine implementation with @LargeTest 
 - [ ] **Step 2: `LlmInferenceService.kt` を作成（骨格）**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -579,7 +579,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
-import com.example.aiinbox.R
+import uk.nordtek.aiinbox.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -725,7 +725,7 @@ git commit -m "feat(llm): add LlmInferenceService skeleton with foreground notif
 - [ ] **Step 1: `LlmInferenceService.kt` をジョブキュー対応に変更**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -738,7 +738,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
-import com.example.aiinbox.R
+import uk.nordtek.aiinbox.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -848,7 +848,7 @@ class LlmInferenceService : Service() {
 - [ ] **Step 2: `LlmServiceClient.kt` を作成（bindラッパ）**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import android.content.ComponentName
 import android.content.Context
@@ -910,7 +910,7 @@ class LlmServiceClient @Inject constructor(
 - [ ] **Step 3: AndroidTest（実機/エミュレータ）**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -951,7 +951,7 @@ class LlmInferenceServiceTest {
 - [ ] **Step 4: テスト実行**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.llm.LlmInferenceServiceTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.llm.LlmInferenceServiceTest
 ```
 Expected: PASS
 
@@ -1090,19 +1090,19 @@ git commit -m "feat(llm): add 5-minute idle timeout to LlmInferenceService"
 - [ ] **Step 1: `SummarizeWorker.kt` を編集**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.llm.ContentHintDetector
-import com.example.aiinbox.llm.LlmServiceClient
-import com.example.aiinbox.llm.ModelManager
-import com.example.aiinbox.llm.ModelVariant
-import com.example.aiinbox.llm.RamDetector
-import com.example.aiinbox.notification.NotificationHelper
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.llm.ContentHintDetector
+import uk.nordtek.aiinbox.llm.LlmServiceClient
+import uk.nordtek.aiinbox.llm.ModelManager
+import uk.nordtek.aiinbox.llm.ModelVariant
+import uk.nordtek.aiinbox.llm.RamDetector
+import uk.nordtek.aiinbox.notification.NotificationHelper
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -1164,17 +1164,17 @@ class SummarizeWorker @AssistedInject constructor(
 - [ ] **Step 2: `TestSummarizeWorkerFactory.kt` を更新**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.llm.ContentHintDetector
-import com.example.aiinbox.llm.LlmServiceClient
-import com.example.aiinbox.llm.ModelManager
-import com.example.aiinbox.notification.NotificationHelper
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.llm.ContentHintDetector
+import uk.nordtek.aiinbox.llm.LlmServiceClient
+import uk.nordtek.aiinbox.llm.ModelManager
+import uk.nordtek.aiinbox.notification.NotificationHelper
 
 class TestSummarizeWorkerFactory(
     private val repo: InboxRepository,
@@ -1234,7 +1234,7 @@ git commit -m "refactor(work): route SummarizeWorker through LlmServiceClient (S
 - [ ] **Step 1: `NetworkModule.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.di
+package uk.nordtek.aiinbox.di
 
 import dagger.Module
 import dagger.Provides
@@ -1262,12 +1262,12 @@ object NetworkModule {
 - [ ] **Step 2: `ModelDownloadProgress.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 sealed interface ModelDownloadProgress {
     data object Idle : ModelDownloadProgress
     data class InProgress(val downloadedBytes: Long, val totalBytes: Long) : ModelDownloadProgress
-    data class Completed(val variant: com.example.aiinbox.llm.ModelVariant) : ModelDownloadProgress
+    data class Completed(val variant: uk.nordtek.aiinbox.llm.ModelVariant) : ModelDownloadProgress
     data class Failed(val message: String) : ModelDownloadProgress
 }
 ```
@@ -1275,7 +1275,7 @@ sealed interface ModelDownloadProgress {
 - [ ] **Step 3: `ModelDownloadWorker.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import android.content.pm.ServiceInfo
@@ -1284,10 +1284,10 @@ import androidx.work.CoroutineWorker
 import androidx.work.Data
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
-import com.example.aiinbox.R
-import com.example.aiinbox.llm.ModelManager
-import com.example.aiinbox.llm.ModelVariant
-import com.example.aiinbox.notification.NotificationChannels
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.llm.ModelManager
+import uk.nordtek.aiinbox.llm.ModelVariant
+import uk.nordtek.aiinbox.notification.NotificationChannels
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -1422,7 +1422,7 @@ nm.createNotificationChannel(
 - [ ] **Step 6: AndroidTest（MockWebServer）**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -1433,8 +1433,8 @@ import androidx.work.ListenableWorker
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
-import com.example.aiinbox.llm.ModelManager
-import com.example.aiinbox.llm.ModelVariant
+import uk.nordtek.aiinbox.llm.ModelManager
+import uk.nordtek.aiinbox.llm.ModelVariant
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -1497,13 +1497,13 @@ class TestableModelManager(ctx: Context, val urlOverride: String) :
 
 `TestModelDownloadWorkerFactory.kt`:
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
-import com.example.aiinbox.llm.ModelManager
+import uk.nordtek.aiinbox.llm.ModelManager
 import okhttp3.OkHttpClient
 
 class TestModelDownloadWorkerFactory(
@@ -1533,7 +1533,7 @@ open class ModelManager @Inject constructor(...)
 - [ ] **Step 8: テスト実行**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.work.ModelDownloadWorkerTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.work.ModelDownloadWorkerTest
 ```
 Expected: PASS
 
@@ -1565,9 +1565,9 @@ git commit -m "feat(work): add ModelDownloadWorker with resume support and progr
 - [ ] **Step 1: `ModelDownloadUiState.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.modeldownload
+package uk.nordtek.aiinbox.ui.modeldownload
 
-import com.example.aiinbox.llm.ModelVariant
+import uk.nordtek.aiinbox.llm.ModelVariant
 
 data class ModelDownloadUiState(
     val variant: ModelVariant = ModelVariant.GEMMA_4_E2B,
@@ -1584,7 +1584,7 @@ data class ModelDownloadUiState(
 - [ ] **Step 2: `ModelDownloadViewModel.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.modeldownload
+package uk.nordtek.aiinbox.ui.modeldownload
 
 import android.app.Application
 import android.net.ConnectivityManager
@@ -1598,9 +1598,9 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.example.aiinbox.llm.ModelManager
-import com.example.aiinbox.llm.RamDetector
-import com.example.aiinbox.work.ModelDownloadWorker
+import uk.nordtek.aiinbox.llm.ModelManager
+import uk.nordtek.aiinbox.llm.RamDetector
+import uk.nordtek.aiinbox.work.ModelDownloadWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -1691,7 +1691,7 @@ class ModelDownloadViewModel @Inject constructor(
 - [ ] **Step 3: `ModelDownloadScreen.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.modeldownload
+package uk.nordtek.aiinbox.ui.modeldownload
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -1805,7 +1805,7 @@ git commit -m "feat(ui): add ModelDownloadViewModel and Screen with mobile netwo
 - [ ] **Step 1: 実装**
 
 ```kotlin
-package com.example.aiinbox
+package uk.nordtek.aiinbox
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -1816,14 +1816,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.aiinbox.llm.ModelManager
-import com.example.aiinbox.notification.NotificationHelper
-import com.example.aiinbox.ui.detail.DetailScreen
-import com.example.aiinbox.ui.detail.DetailViewModel
-import com.example.aiinbox.ui.inbox.InboxScreen
-import com.example.aiinbox.ui.modeldownload.ModelDownloadScreen
-import com.example.aiinbox.ui.navigation.Routes
-import com.example.aiinbox.ui.theme.AiInboxTheme
+import uk.nordtek.aiinbox.llm.ModelManager
+import uk.nordtek.aiinbox.notification.NotificationHelper
+import uk.nordtek.aiinbox.ui.detail.DetailScreen
+import uk.nordtek.aiinbox.ui.detail.DetailViewModel
+import uk.nordtek.aiinbox.ui.inbox.InboxScreen
+import uk.nordtek.aiinbox.ui.modeldownload.ModelDownloadScreen
+import uk.nordtek.aiinbox.ui.navigation.Routes
+import uk.nordtek.aiinbox.ui.theme.AiInboxTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -1893,13 +1893,13 @@ git commit -m "feat(ui): redirect to model download screen when no model is pres
 - [ ] **Step 1: バインディングを差し替え**
 
 ```kotlin
-package com.example.aiinbox.di
+package uk.nordtek.aiinbox.di
 
-import com.example.aiinbox.llm.ContentHintDetector
-import com.example.aiinbox.llm.LlmEngine
-import com.example.aiinbox.llm.LlmResponseParser
-import com.example.aiinbox.llm.MediaPipeLlmEngine
-import com.example.aiinbox.llm.PromptBuilder
+import uk.nordtek.aiinbox.llm.ContentHintDetector
+import uk.nordtek.aiinbox.llm.LlmEngine
+import uk.nordtek.aiinbox.llm.LlmResponseParser
+import uk.nordtek.aiinbox.llm.MediaPipeLlmEngine
+import uk.nordtek.aiinbox.llm.PromptBuilder
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -1932,10 +1932,10 @@ object LlmProvidersModule {
 
 `app/src/androidTest/kotlin/com/example/aiinbox/di/TestLlmModule.kt`:
 ```kotlin
-package com.example.aiinbox.di
+package uk.nordtek.aiinbox.di
 
-import com.example.aiinbox.llm.FakeLlmEngine
-import com.example.aiinbox.llm.LlmEngine
+import uk.nordtek.aiinbox.llm.FakeLlmEngine
+import uk.nordtek.aiinbox.llm.LlmEngine
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.components.SingletonComponent
@@ -1977,11 +1977,11 @@ git commit -m "feat(di): switch LlmEngine binding from Fake to MediaPipeLlmEngin
 検証段階で実DLが面倒な場合は手動配置：
 ```bash
 # 端末上のパスを確認
-adb shell run-as com.example.aiinbox.debug ls no_backup/files/models/
+adb shell run-as uk.nordtek.aiinbox.debug ls no_backup/files/models/
 
 # ホスト→端末にPush（実モデル）
 adb push gemma-4-e2b-q4km.task /data/local/tmp/
-adb shell run-as com.example.aiinbox.debug cp /data/local/tmp/gemma-4-e2b-q4km.task no_backup/files/models/
+adb shell run-as uk.nordtek.aiinbox.debug cp /data/local/tmp/gemma-4-e2b-q4km.task no_backup/files/models/
 ```
 
 - [ ] **Step 2: アプリ初回起動 → モデルなしでDL画面表示**
@@ -2010,7 +2010,7 @@ adb shell run-as com.example.aiinbox.debug cp /data/local/tmp/gemma-4-e2b-q4km.t
 
 - [ ] Shareして要約完了 → 5分以上待つ
 - [ ] 通知が消える（Service が `stopSelf` した）
-- [ ] `adb shell dumpsys meminfo com.example.aiinbox.debug` でPSSが大幅減（モデル分が解放）
+- [ ] `adb shell dumpsys meminfo uk.nordtek.aiinbox.debug` でPSSが大幅減（モデル分が解放）
 
 - [ ] **Step 6: 失敗系**
 

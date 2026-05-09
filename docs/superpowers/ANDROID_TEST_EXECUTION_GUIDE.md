@@ -98,14 +98,14 @@ cd /var/home/nord14541/android-ai-inbox
 
 ```bash
 ./gradlew :app:connectedDebugAndroidTest \
-  -Pandroid.testInstrumentationRunnerArguments.class=com.example.aiinbox.data.db.AppDatabaseEncryptionTest
+  -Pandroid.testInstrumentationRunnerArguments.class=uk.nordtek.aiinbox.data.db.AppDatabaseEncryptionTest
 ```
 
 ### 複数のテストクラス
 
 ```bash
 ./gradlew :app:connectedDebugAndroidTest \
-  -Pandroid.testInstrumentationRunnerArguments.package=com.example.aiinbox.data
+  -Pandroid.testInstrumentationRunnerArguments.package=uk.nordtek.aiinbox.data
 ```
 
 ### Plan 1 完了時の検証バッチ
@@ -150,7 +150,7 @@ AVDのデータパーティションを大きく：`avdmanager` で `--partition
 ### `Test instrumentation process crashed`
 
 - `Hilt` の `HiltTestRunner` が見えない場合、Plan 1 Task 14 の `app/src/androidTest/kotlin/com/example/aiinbox/HiltTestRunner.kt` が作成されているか確認
-- `app/build.gradle.kts` の `testInstrumentationRunner = "com.example.aiinbox.HiltTestRunner"` が設定されているか確認
+- `app/build.gradle.kts` の `testInstrumentationRunner = "uk.nordtek.aiinbox.HiltTestRunner"` が設定されているか確認
 
 ### SDKライセンスエラー
 

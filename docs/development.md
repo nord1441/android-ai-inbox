@@ -18,7 +18,7 @@ Two ways out:
    want auto-launch:
 
        ./gradlew installDebug \
-         && adb shell am start -n com.example.aiinbox.debug/com.example.aiinbox.MainActivity
+         && adb shell am start -n uk.nordtek.aiinbox.debug/uk.nordtek.aiinbox.MainActivity
 
 2. **Disable uninstall in the Run config**. *Run/Debug Configurations →
    app → Installation Options → "Always install with package manager"
@@ -52,8 +52,8 @@ reopen the app.
         MainActivity:I AndroidRuntime:E *:S
 
     # Inspect the on-device model directory
-    adb shell 'run-as com.example.aiinbox.debug ls -la files/models/'
+    adb shell 'run-as uk.nordtek.aiinbox.debug ls -la files/models/'
 
     # Verify the package is installed and debuggable
-    adb shell 'pm path com.example.aiinbox.debug'
-    adb shell 'run-as com.example.aiinbox.debug id'
+    adb shell 'pm path uk.nordtek.aiinbox.debug'
+    adb shell 'run-as uk.nordtek.aiinbox.debug id'

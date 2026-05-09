@@ -180,7 +180,7 @@ fun `attachmentKind round trips through TypeConverter`() {
 - [ ] **Step 2: 失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.DbTypeConvertersTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.DbTypeConvertersTest
 ```
 
 Expected: コンパイルエラー（`AttachmentKind` 未解決）
@@ -190,7 +190,7 @@ Expected: コンパイルエラー（`AttachmentKind` 未解決）
 `app/src/main/kotlin/com/example/aiinbox/data/db/AttachmentKind.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 enum class AttachmentKind {
     /** 他アプリからシェアシート経由で受信した画像。 */
@@ -215,7 +215,7 @@ fun attachmentKindFromString(s: String): AttachmentKind = AttachmentKind.valueOf
 - [ ] **Step 5: テスト合格確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.DbTypeConvertersTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.DbTypeConvertersTest
 ```
 
 Expected: PASS
@@ -243,7 +243,7 @@ git commit -m "feat(data): add AttachmentKind enum and TypeConverter"
 `app/src/test/kotlin/com/example/aiinbox/data/db/AttachmentTest.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -289,7 +289,7 @@ class AttachmentTest {
 - [ ] **Step 2: 失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.AttachmentTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.AttachmentTest
 ```
 
 Expected: コンパイルエラー
@@ -299,7 +299,7 @@ Expected: コンパイルエラー
 `app/src/main/kotlin/com/example/aiinbox/data/db/Attachment.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -343,7 +343,7 @@ data class Attachment(
 `app/src/main/kotlin/com/example/aiinbox/data/db/InboxItemWithAttachments.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.Embedded
 import androidx.room.Relation
@@ -361,7 +361,7 @@ data class InboxItemWithAttachments(
 - [ ] **Step 5: テスト合格確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.AttachmentTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.AttachmentTest
 ```
 
 Expected: PASS
@@ -408,7 +408,7 @@ fun `inboxItem allows null originalText`() {
 - [ ] **Step 2: 失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.InboxItemTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.InboxItemTest
 ```
 
 Expected: コンパイルエラー（`originalText: String` 非null型）
@@ -492,7 +492,7 @@ git commit -m "feat(data): make InboxItem.originalText nullable for image-only i
 `app/src/main/kotlin/com/example/aiinbox/data/db/AttachmentDao.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -624,7 +624,7 @@ git commit -m "feat(data): add AttachmentDao and with-attachments queries"
 `app/src/main/kotlin/com/example/aiinbox/data/db/Migrations.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -741,7 +741,7 @@ val MIGRATION_1_2: Migration = object : Migration(1, 2) {
 `FtsCallback.kt` を全体置換：
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -894,7 +894,7 @@ object FtsCallback : RoomDatabase.Callback() {
 `AppDatabase.kt` 全体置換：
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -945,7 +945,7 @@ fun provideAttachmentDao(db: AppDatabase): AttachmentDao = db.attachmentDao()
 ./gradlew :app:assembleDebug
 ```
 
-Expected: BUILD SUCCESSFUL（Room schema が `app/schemas/com.example.aiinbox.data.db.AppDatabase/2.json` に出力される）
+Expected: BUILD SUCCESSFUL（Room schema が `app/schemas/uk.nordtek.aiinbox.data.db.AppDatabase/2.json` に出力される）
 
 - [ ] **Step 7: コミット**
 
@@ -955,7 +955,7 @@ git add app/src/main/kotlin/com/example/aiinbox/data/db/Migrations.kt \
         app/src/main/kotlin/com/example/aiinbox/data/db/FtsCallback.kt \
         app/src/main/kotlin/com/example/aiinbox/data/db/SqlCipherFactory.kt \
         app/src/main/kotlin/com/example/aiinbox/di/DatabaseModule.kt \
-        app/schemas/com.example.aiinbox.data.db.AppDatabase/2.json
+        app/schemas/uk.nordtek.aiinbox.data.db.AppDatabase/2.json
 git commit -m "feat(data): bump DB to v2 with attachments table and FTS5 ocr_text"
 ```
 
@@ -971,14 +971,14 @@ git commit -m "feat(data): bump DB to v2 with attachments table and FTS5 ocr_tex
 `app/src/androidTest/kotlin/com/example/aiinbox/data/db/AppDatabaseMigrationTest.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.Room
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
+import uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProvider
 import com.google.common.truth.Truth.assertThat
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import org.junit.Rule
@@ -1076,7 +1076,7 @@ class AppDatabaseMigrationTest {
 - [ ] **Step 2: 実行**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.data.db.AppDatabaseMigrationTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.data.db.AppDatabaseMigrationTest
 ```
 
 Expected: PASS（要 USB 接続デバイス or 起動中エミュレータ）
@@ -1101,7 +1101,7 @@ git commit -m "test(data): verify v1 to v2 migration preserves data and adds att
 `app/src/test/kotlin/com/example/aiinbox/util/BitmapNormalizerTest.kt`：
 
 ```kotlin
-package com.example.aiinbox.util
+package uk.nordtek.aiinbox.util
 
 import android.graphics.Bitmap
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -1154,7 +1154,7 @@ class BitmapNormalizerTest {
 - [ ] **Step 2: 失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.util.BitmapNormalizerTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.util.BitmapNormalizerTest
 ```
 
 Expected: コンパイルエラー
@@ -1164,7 +1164,7 @@ Expected: コンパイルエラー
 `app/src/main/kotlin/com/example/aiinbox/util/BitmapNormalizer.kt`：
 
 ```kotlin
-package com.example.aiinbox.util
+package uk.nordtek.aiinbox.util
 
 import android.graphics.Bitmap
 import java.io.ByteArrayOutputStream
@@ -1193,7 +1193,7 @@ object BitmapNormalizer {
 - [ ] **Step 4: テスト合格確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.util.BitmapNormalizerTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.util.BitmapNormalizerTest
 ```
 
 Expected: PASS
@@ -1220,7 +1220,7 @@ git commit -m "feat(util): add BitmapNormalizer for JPEG resize and encoding"
 `app/src/androidTest/kotlin/com/example/aiinbox/data/storage/EncryptedImageStoreTest.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.storage
+package uk.nordtek.aiinbox.data.storage
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -1278,7 +1278,7 @@ class EncryptedImageStoreTest {
 `app/src/main/kotlin/com/example/aiinbox/data/storage/EncryptedImageStore.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.storage
+package uk.nordtek.aiinbox.data.storage
 
 import android.content.Context
 import androidx.security.crypto.EncryptedFile
@@ -1359,10 +1359,10 @@ class EncryptedImageStore @Inject constructor(
 `app/src/main/kotlin/com/example/aiinbox/di/StorageModule.kt`：
 
 ```kotlin
-package com.example.aiinbox.di
+package uk.nordtek.aiinbox.di
 
 import android.content.Context
-import com.example.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -1385,7 +1385,7 @@ object StorageModule {
 - [ ] **Step 4: テスト実行**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.data.storage.EncryptedImageStoreTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.data.storage.EncryptedImageStoreTest
 ```
 
 Expected: PASS
@@ -1417,16 +1417,16 @@ git commit -m "feat(storage): add EncryptedImageStore using AES-256 GCM Encrypte
 `app/src/androidTest/kotlin/com/example/aiinbox/data/repository/InboxRepositoryAttachmentTest.kt`：
 
 ```kotlin
-package com.example.aiinbox.data.repository
+package uk.nordtek.aiinbox.data.repository
 
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.aiinbox.data.db.AppDatabase
-import com.example.aiinbox.data.db.Attachment
-import com.example.aiinbox.data.db.AttachmentKind
-import com.example.aiinbox.data.db.FtsCallback
-import com.example.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.data.db.AppDatabase
+import uk.nordtek.aiinbox.data.db.Attachment
+import uk.nordtek.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.db.FtsCallback
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -1532,11 +1532,11 @@ class InboxRepositoryAttachmentTest {
 `InboxRepository.kt` を編集。まずファイル冒頭の import に追加：
 
 ```kotlin
-import com.example.aiinbox.data.db.Attachment
-import com.example.aiinbox.data.db.AttachmentDao
-import com.example.aiinbox.data.db.AttachmentKind
-import com.example.aiinbox.data.db.InboxItemWithAttachments
-import com.example.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.data.db.Attachment
+import uk.nordtek.aiinbox.data.db.AttachmentDao
+import uk.nordtek.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.db.InboxItemWithAttachments
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
 ```
 
 コンストラクタを置換：
@@ -1672,7 +1672,7 @@ data class AttachmentDraft(
 private lateinit var dir: java.io.File
 // setup 内
 dir = java.io.File(ctx.cacheDir, "attach-${javaClass.simpleName}").apply { deleteRecursively(); mkdirs() }
-val store = com.example.aiinbox.data.storage.EncryptedImageStore(ctx, dir)
+val store = uk.nordtek.aiinbox.data.storage.EncryptedImageStore(ctx, dir)
 repo = InboxRepository(db.inboxDao(), db.attachmentDao(), store)
 
 // teardown 内
@@ -1687,7 +1687,7 @@ dir.deleteRecursively()
 - [ ] **Step 4: 既存 Repository テスト + 新規テスト 合致確認**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.data.repository.*
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.data.repository.*
 ```
 
 Expected: 既存 + 新規 PASS
@@ -1716,7 +1716,7 @@ git commit -m "feat(repository): add attachment-aware item lifecycle and observa
 `app/src/main/kotlin/com/example/aiinbox/ocr/OcrEngine.kt`：
 
 ```kotlin
-package com.example.aiinbox.ocr
+package uk.nordtek.aiinbox.ocr
 
 import android.graphics.Bitmap
 
@@ -1735,7 +1735,7 @@ interface OcrEngine {
 `app/src/androidTest/kotlin/com/example/aiinbox/ocr/FakeOcrEngine.kt`：
 
 ```kotlin
-package com.example.aiinbox.ocr
+package uk.nordtek.aiinbox.ocr
 
 import android.graphics.Bitmap
 
@@ -1776,7 +1776,7 @@ git commit -m "feat(ocr): add OcrEngine abstraction and FakeOcrEngine test doubl
 `app/src/main/kotlin/com/example/aiinbox/ocr/MlKitOcrEngine.kt`：
 
 ```kotlin
-package com.example.aiinbox.ocr
+package uk.nordtek.aiinbox.ocr
 
 import android.graphics.Bitmap
 import com.google.mlkit.vision.common.InputImage
@@ -1823,10 +1823,10 @@ class MlKitOcrEngine @Inject constructor() : OcrEngine {
 `app/src/main/kotlin/com/example/aiinbox/di/OcrModule.kt`：
 
 ```kotlin
-package com.example.aiinbox.di
+package uk.nordtek.aiinbox.di
 
-import com.example.aiinbox.ocr.MlKitOcrEngine
-import com.example.aiinbox.ocr.OcrEngine
+import uk.nordtek.aiinbox.ocr.MlKitOcrEngine
+import uk.nordtek.aiinbox.ocr.OcrEngine
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -1861,7 +1861,7 @@ implementation(libs.kotlinx.coroutines.play.services)
 `app/src/androidTest/kotlin/com/example/aiinbox/ocr/MlKitOcrEngineTest.kt`：
 
 ```kotlin
-package com.example.aiinbox.ocr
+package uk.nordtek.aiinbox.ocr
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -1905,7 +1905,7 @@ class MlKitOcrEngineTest {
 
 ```bash
 ./gradlew :app:assembleDebug
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.ocr.MlKitOcrEngineTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.ocr.MlKitOcrEngineTest
 ```
 
 Expected: PASS（実機 + Play Services + 初回 DL に時間かかる場合あり）
@@ -1939,7 +1939,7 @@ fun `detect with screenshot attachment returns SCREENSHOT`() {
     val detector = ContentHintDetector()
     val result = detector.detect(
         text = "",
-        attachmentKinds = listOf(com.example.aiinbox.data.db.AttachmentKind.SCREENSHOT),
+        attachmentKinds = listOf(uk.nordtek.aiinbox.data.db.AttachmentKind.SCREENSHOT),
     )
     assertThat(result).isEqualTo(ContentHint.SCREENSHOT)
 }
@@ -1949,7 +1949,7 @@ fun `detect with shared image attachment only returns IMAGE_OCR`() {
     val detector = ContentHintDetector()
     val result = detector.detect(
         text = "",
-        attachmentKinds = listOf(com.example.aiinbox.data.db.AttachmentKind.SHARED_IMAGE),
+        attachmentKinds = listOf(uk.nordtek.aiinbox.data.db.AttachmentKind.SHARED_IMAGE),
     )
     assertThat(result).isEqualTo(ContentHint.IMAGE_OCR)
 }
@@ -1960,8 +1960,8 @@ fun `detect mixed attachments prefers SCREENSHOT`() {
     val result = detector.detect(
         text = "",
         attachmentKinds = listOf(
-            com.example.aiinbox.data.db.AttachmentKind.SHARED_IMAGE,
-            com.example.aiinbox.data.db.AttachmentKind.SCREENSHOT,
+            uk.nordtek.aiinbox.data.db.AttachmentKind.SHARED_IMAGE,
+            uk.nordtek.aiinbox.data.db.AttachmentKind.SCREENSHOT,
         ),
     )
     assertThat(result).isEqualTo(ContentHint.SCREENSHOT)
@@ -1983,7 +1983,7 @@ fun `detect text-only with empty attachments uses original detection`() {
 `ContentHint.kt` を全体置換：
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 enum class ContentHint {
     WEB_ARTICLE,
@@ -2010,9 +2010,9 @@ enum class ContentHint {
  */
 fun detect(
     text: String,
-    attachmentKinds: List<com.example.aiinbox.data.db.AttachmentKind>,
+    attachmentKinds: List<uk.nordtek.aiinbox.data.db.AttachmentKind>,
 ): ContentHint {
-    if (attachmentKinds.any { it == com.example.aiinbox.data.db.AttachmentKind.SCREENSHOT }) {
+    if (attachmentKinds.any { it == uk.nordtek.aiinbox.data.db.AttachmentKind.SCREENSHOT }) {
         return ContentHint.SCREENSHOT
     }
     if (attachmentKinds.isNotEmpty() && text.isBlank()) {
@@ -2025,7 +2025,7 @@ fun detect(
 - [ ] **Step 4: テスト合格確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.ContentHintDetectorTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.ContentHintDetectorTest
 ```
 
 Expected: PASS
@@ -2052,10 +2052,10 @@ git commit -m "feat(llm): add SCREENSHOT and IMAGE_OCR content hints with attach
 `app/src/test/kotlin/com/example/aiinbox/work/JoinedTextBuilderTest.kt`：
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
-import com.example.aiinbox.data.db.Attachment
-import com.example.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.db.Attachment
+import uk.nordtek.aiinbox.data.db.AttachmentKind
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
@@ -2126,7 +2126,7 @@ class JoinedTextBuilderTest {
 - [ ] **Step 2: 失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.work.JoinedTextBuilderTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.work.JoinedTextBuilderTest
 ```
 
 Expected: コンパイルエラー
@@ -2136,10 +2136,10 @@ Expected: コンパイルエラー
 `app/src/main/kotlin/com/example/aiinbox/work/JoinedTextBuilder.kt`：
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
-import com.example.aiinbox.data.db.Attachment
-import com.example.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.db.Attachment
+import uk.nordtek.aiinbox.data.db.AttachmentKind
 
 /**
  * 添付テキスト（OCR）と本文を、LLM 投入用の単一文字列に整形する。
@@ -2190,7 +2190,7 @@ object JoinedTextBuilder {
 - [ ] **Step 4: テスト合格確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.work.JoinedTextBuilderTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.work.JoinedTextBuilderTest
 ```
 
 Expected: PASS
@@ -2218,20 +2218,20 @@ git commit -m "feat(work): add JoinedTextBuilder for OCR + body text concatenati
 `SummarizeWorker.kt` を全体置換：
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import android.graphics.BitmapFactory
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.data.storage.EncryptedImageStore
-import com.example.aiinbox.llm.ContentHintDetector
-import com.example.aiinbox.llm.LlmServiceClient
-import com.example.aiinbox.llm.ModelManager
-import com.example.aiinbox.notification.NotificationHelper
-import com.example.aiinbox.ocr.OcrEngine
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.llm.ContentHintDetector
+import uk.nordtek.aiinbox.llm.LlmServiceClient
+import uk.nordtek.aiinbox.llm.ModelManager
+import uk.nordtek.aiinbox.notification.NotificationHelper
+import uk.nordtek.aiinbox.ocr.OcrEngine
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -2398,10 +2398,10 @@ class TestSummarizeWorkerFactory(
 
 ```kotlin
 import android.graphics.Bitmap
-import com.example.aiinbox.data.db.AttachmentKind
-import com.example.aiinbox.data.repository.AttachmentDraft
-import com.example.aiinbox.data.storage.EncryptedImageStore
-import com.example.aiinbox.ocr.FakeOcrEngine
+import uk.nordtek.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.repository.AttachmentDraft
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.ocr.FakeOcrEngine
 import java.io.ByteArrayOutputStream
 import java.io.File
 ```
@@ -2494,7 +2494,7 @@ fun provideOcrEngine(): OcrEngine = FakeOcrEngine()
 
 ```bash
 ./gradlew :app:testDebugUnitTest
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.work.SummarizeWorkerTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.work.SummarizeWorkerTest
 ```
 
 Expected: PASS
@@ -2549,7 +2549,7 @@ git commit -m "feat(work): integrate OCR step into SummarizeWorker pipeline"
 `ShareReceiverActivity.kt` を全体置換：
 
 ```kotlin
-package com.example.aiinbox.share
+package uk.nordtek.aiinbox.share
 
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -2557,14 +2557,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import com.example.aiinbox.AiInboxApplication
-import com.example.aiinbox.R
-import com.example.aiinbox.data.db.AttachmentKind
-import com.example.aiinbox.data.repository.AttachmentDraft
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.data.storage.EncryptedImageStore
-import com.example.aiinbox.util.BitmapNormalizer
-import com.example.aiinbox.work.WorkScheduler
+import uk.nordtek.aiinbox.AiInboxApplication
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.repository.AttachmentDraft
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.util.BitmapNormalizer
+import uk.nordtek.aiinbox.work.WorkScheduler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -2679,7 +2679,7 @@ class ShareReceiverActivity : ComponentActivity() {
 `app/src/androidTest/kotlin/com/example/aiinbox/share/ShareReceiverActivityTest.kt`：
 
 ```kotlin
-package com.example.aiinbox.share
+package uk.nordtek.aiinbox.share
 
 import android.content.Intent
 import android.graphics.Bitmap
@@ -2688,7 +2688,7 @@ import androidx.core.content.FileProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.repository.InboxRepository
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -2784,7 +2784,7 @@ class ShareReceiverActivityTest {
 
 ```bash
 ./gradlew :app:assembleDebug
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.share.ShareReceiverActivityTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.share.ShareReceiverActivityTest
 ```
 
 Expected: PASS
@@ -2812,15 +2812,15 @@ git commit -m "feat(share): accept image/* via SEND and SEND_MULTIPLE intents"
 `app/src/main/kotlin/com/example/aiinbox/screenshot/BitmapToAttachmentPipeline.kt`：
 
 ```kotlin
-package com.example.aiinbox.screenshot
+package uk.nordtek.aiinbox.screenshot
 
 import android.graphics.Bitmap
-import com.example.aiinbox.data.db.AttachmentKind
-import com.example.aiinbox.data.repository.AttachmentDraft
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.data.storage.EncryptedImageStore
-import com.example.aiinbox.util.BitmapNormalizer
-import com.example.aiinbox.work.WorkScheduler
+import uk.nordtek.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.repository.AttachmentDraft
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.util.BitmapNormalizer
+import uk.nordtek.aiinbox.work.WorkScheduler
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -2894,13 +2894,13 @@ class BitmapToAttachmentPipeline @Inject constructor(
 `app/src/androidTest/kotlin/com/example/aiinbox/screenshot/BitmapToAttachmentPipelineTest.kt`：
 
 ```kotlin
-package com.example.aiinbox.screenshot
+package uk.nordtek.aiinbox.screenshot
 
 import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.db.AttachmentKind
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -2916,7 +2916,7 @@ class BitmapToAttachmentPipelineTest {
 
     @get:Rule val hiltRule = HiltAndroidRule(this)
     @Inject lateinit var pipeline: BitmapToAttachmentPipeline
-    @Inject lateinit var repository: com.example.aiinbox.data.repository.InboxRepository
+    @Inject lateinit var repository: uk.nordtek.aiinbox.data.repository.InboxRepository
 
     @Test
     fun saveAsItem_createsItemAndAttachment() = runBlocking {
@@ -2954,7 +2954,7 @@ class BitmapToAttachmentPipelineTest {
 - [ ] **Step 3: テスト実行**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.screenshot.BitmapToAttachmentPipelineTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.screenshot.BitmapToAttachmentPipelineTest
 ```
 
 Expected: PASS
@@ -2996,7 +2996,7 @@ NotificationManagerCompat.from(context).createNotificationChannel(
 `app/src/main/kotlin/com/example/aiinbox/screenshot/ScreenshotCaptureService.kt`：
 
 ```kotlin
-package com.example.aiinbox.screenshot
+package uk.nordtek.aiinbox.screenshot
 
 import android.app.Notification
 import android.app.PendingIntent
@@ -3018,10 +3018,10 @@ import android.util.DisplayMetrics
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import com.example.aiinbox.AiInboxApplication
-import com.example.aiinbox.R
-import com.example.aiinbox.data.db.AttachmentKind
-import com.example.aiinbox.notification.NotificationChannels
+import uk.nordtek.aiinbox.AiInboxApplication
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.notification.NotificationChannels
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -3277,7 +3277,7 @@ git commit -m "feat(screenshot): add ScreenshotCaptureService using MediaProject
 `app/src/main/kotlin/com/example/aiinbox/screenshot/ScreenshotCaptureActivity.kt`：
 
 ```kotlin
-package com.example.aiinbox.screenshot
+package uk.nordtek.aiinbox.screenshot
 
 import android.app.Activity
 import android.content.Intent
@@ -3288,7 +3288,7 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import com.example.aiinbox.R
+import uk.nordtek.aiinbox.R
 
 class ScreenshotCaptureActivity : ComponentActivity() {
 
@@ -3369,7 +3369,7 @@ git commit -m "feat(screenshot): add launcher activity to trigger MediaProjectio
 `app/src/main/kotlin/com/example/aiinbox/screenshot/ScreenshotTileService.kt`：
 
 ```kotlin
-package com.example.aiinbox.screenshot
+package uk.nordtek.aiinbox.screenshot
 
 import android.content.Intent
 import android.os.Build
@@ -3443,7 +3443,7 @@ git commit -m "feat(screenshot): add Quick Settings tile to trigger screenshot c
 `app/src/main/kotlin/com/example/aiinbox/ui/coil/EncryptedImageFetcher.kt`：
 
 ```kotlin
-package com.example.aiinbox.ui.coil
+package uk.nordtek.aiinbox.ui.coil
 
 import android.content.Context
 import coil.ImageLoader
@@ -3453,8 +3453,8 @@ import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
 import coil.request.Options
-import com.example.aiinbox.data.db.Attachment
-import com.example.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.data.db.Attachment
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
 import okio.buffer
 import okio.source
 
@@ -3487,12 +3487,12 @@ class EncryptedImageFetcher(
 `app/src/main/kotlin/com/example/aiinbox/di/ImageLoaderModule.kt`：
 
 ```kotlin
-package com.example.aiinbox.di
+package uk.nordtek.aiinbox.di
 
 import android.content.Context
 import coil.ImageLoader
-import com.example.aiinbox.data.storage.EncryptedImageStore
-import com.example.aiinbox.ui.coil.EncryptedImageFetcher
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.ui.coil.EncryptedImageFetcher
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -3549,9 +3549,9 @@ git commit -m "feat(ui): add Coil Fetcher for encrypted attachment images"
 `InboxUiState.kt` を全体置換：
 
 ```kotlin
-package com.example.aiinbox.ui.inbox
+package uk.nordtek.aiinbox.ui.inbox
 
-import com.example.aiinbox.data.db.InboxItemWithAttachments
+import uk.nordtek.aiinbox.data.db.InboxItemWithAttachments
 
 data class InboxUiState(
     val items: List<InboxItemWithAttachments> = emptyList(),
@@ -3576,7 +3576,7 @@ data class InboxUiState(
 
 ```kotlin
 @Composable
-private fun AttachmentThumbnails(atts: List<com.example.aiinbox.data.db.Attachment>) {
+private fun AttachmentThumbnails(atts: List<uk.nordtek.aiinbox.data.db.Attachment>) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         val visible = atts.take(2)
         visible.forEachIndexed { idx, att ->
@@ -3613,7 +3613,7 @@ if (attachments.isNotEmpty()) {
 を `Row { ... }` 直下に挿入（既存の Column / Text 群はそのまま `Row` の右側に残す）。
 
 @Composable
-private fun AttachmentThumbnails(atts: List<com.example.aiinbox.data.db.Attachment>) {
+private fun AttachmentThumbnails(atts: List<uk.nordtek.aiinbox.data.db.Attachment>) {
     Row {
         val visible = atts.take(2)
         visible.forEachIndexed { idx, att ->
@@ -3673,10 +3673,10 @@ git commit -m "feat(ui): show attachment thumbnails in inbox list rows"
 `DetailUiState.kt` を全体置換：
 
 ```kotlin
-package com.example.aiinbox.ui.detail
+package uk.nordtek.aiinbox.ui.detail
 
-import com.example.aiinbox.data.db.Attachment
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.Attachment
+import uk.nordtek.aiinbox.data.db.InboxItem
 
 data class DetailUiState(
     val item: InboxItem? = null,
@@ -3715,7 +3715,7 @@ repository.observeItemWithAttachments(itemId)
 ```kotlin
 @Composable
 private fun AttachmentGallery(
-    atts: List<com.example.aiinbox.data.db.Attachment>,
+    atts: List<uk.nordtek.aiinbox.data.db.Attachment>,
     onAttachmentClick: (Int) -> Unit,
 ) {
     if (atts.isEmpty()) return
@@ -3755,7 +3755,7 @@ private fun AttachmentGallery(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FullscreenViewer(
-    atts: List<com.example.aiinbox.data.db.Attachment>,
+    atts: List<uk.nordtek.aiinbox.data.db.Attachment>,
     initialIndex: Int,
     onDismiss: () -> Unit,
 ) {
@@ -3871,7 +3871,7 @@ git commit -m "feat(ui): add attachment gallery, fullscreen viewer, and OCR disp
 1. リストでスワイプ削除 → 5秒以内に「Undo」タップ
 2. 期待: アイテムも添付サムネも復活
 3. 別のアイテムを削除 → Undo せず10秒待つ
-4. `adb shell run-as com.example.aiinbox.debug ls files/attachments` で対応ファイルが消えていることを確認
+4. `adb shell run-as uk.nordtek.aiinbox.debug ls files/attachments` で対応ファイルが消えていることを確認
 
 ## 8. FTS 検索
 1. OCR が完了したアイテムについて、画像内の単語で検索

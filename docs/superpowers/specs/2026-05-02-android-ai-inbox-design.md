@@ -60,7 +60,7 @@ Androidの **Share Intent (`ACTION_SEND` / `text/plain`)** で受け取ったテ
 シングルモジュール (`:app`) 構成。マルチモジュール化はMVP範囲では過剰。パッケージとインターフェースで層を分離する。
 
 ```
-com.example.aiinbox/
+uk.nordtek.aiinbox/
 ├── ui/              ← Compose画面とViewModel (inbox / detail / settings / theme)
 ├── share/           ← ShareReceiverActivity（Intent受け）
 ├── data/            ← Room DB + Repository + SQLCipher/Keystore鍵管理

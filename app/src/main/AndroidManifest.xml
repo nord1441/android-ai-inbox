@@ -91,7 +91,7 @@
             android:name=".notification.CalendarActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.example.aiinbox.ADD_TO_CALENDAR"/>
+                <action android:name="uk.nordtek.aiinbox.ADD_TO_CALENDAR"/>
             </intent-filter>
         </receiver>
 

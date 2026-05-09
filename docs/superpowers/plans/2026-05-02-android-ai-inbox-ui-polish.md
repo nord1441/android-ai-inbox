@@ -99,12 +99,12 @@ fun observeSearch(query: String, hasEventOnly: Int): Flow<List<InboxItem>>
 - [ ] **Step 2: AndroidTest**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
-import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
+import uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProvider
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -158,7 +158,7 @@ class InboxDaoFilterTest {
 - [ ] **Step 3: テスト実行**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.data.db.InboxDaoFilterTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.data.db.InboxDaoFilterTest
 ```
 Expected: PASS
 
@@ -182,7 +182,7 @@ git commit -m "feat(data): add filtered observation and search queries to InboxD
 - [ ] **Step 1: `InboxFilter.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.inbox
+package uk.nordtek.aiinbox.ui.inbox
 
 data class InboxFilter(
     val query: String = "",
@@ -198,7 +198,7 @@ data class InboxFilter(
 - [ ] **Step 2: `InboxRepository.kt` に `observeFiltered` を追加**
 
 ```kotlin
-import com.example.aiinbox.ui.inbox.InboxFilter
+import uk.nordtek.aiinbox.ui.inbox.InboxFilter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -226,15 +226,15 @@ fun observeFiltered(filter: InboxFilter): Flow<List<InboxItem>> {
 - [ ] **Step 4: AndroidTest を追加**
 
 ```kotlin
-package com.example.aiinbox.data.repository
+package uk.nordtek.aiinbox.data.repository
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
-import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
-import com.example.aiinbox.data.db.AppDatabase
-import com.example.aiinbox.data.db.buildEncryptedDatabase
-import com.example.aiinbox.ui.inbox.InboxFilter
+import uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProvider
+import uk.nordtek.aiinbox.data.db.AppDatabase
+import uk.nordtek.aiinbox.data.db.buildEncryptedDatabase
+import uk.nordtek.aiinbox.ui.inbox.InboxFilter
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -285,7 +285,7 @@ class InboxRepositoryFilterTest {
 - [ ] **Step 5: テスト実行**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.data.repository.InboxRepositoryFilterTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.data.repository.InboxRepositoryFilterTest
 ```
 Expected: PASS
 
@@ -309,9 +309,9 @@ git commit -m "feat(data): add InboxFilter and observeFiltered to repository"
 - [ ] **Step 1: `InboxUiState.kt` を更新**
 
 ```kotlin
-package com.example.aiinbox.ui.inbox
+package uk.nordtek.aiinbox.ui.inbox
 
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.InboxItem
 
 data class InboxUiState(
     val items: List<InboxItem> = emptyList(),
@@ -325,11 +325,11 @@ data class InboxUiState(
 - [ ] **Step 2: `InboxViewModel.kt` を更新**
 
 ```kotlin
-package com.example.aiinbox.ui.inbox
+package uk.nordtek.aiinbox.ui.inbox
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.repository.InboxRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -424,7 +424,7 @@ fun `query change reflects in filter state`() = runTest {
 - [ ] **Step 4: テスト実行**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.ui.inbox.InboxViewModelTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.ui.inbox.InboxViewModelTest
 ```
 Expected: PASS
 
@@ -446,7 +446,7 @@ git commit -m "feat(ui): add query and filter state management to InboxViewModel
 - [ ] **Step 1: `InboxScreen.kt` を更新**
 
 ```kotlin
-package com.example.aiinbox.ui.inbox
+package uk.nordtek.aiinbox.ui.inbox
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -482,9 +482,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.aiinbox.R
-import com.example.aiinbox.data.db.InboxItem
-import com.example.aiinbox.data.db.ItemStatus
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.ItemStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -686,9 +686,9 @@ fun finalizeDelete(id: String) {
 - [ ] **Step 2: `DetailUiState.kt` を更新**
 
 ```kotlin
-package com.example.aiinbox.ui.detail
+package uk.nordtek.aiinbox.ui.detail
 
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.InboxItem
 
 data class DetailUiState(
     val item: InboxItem? = null,
@@ -701,13 +701,13 @@ data class DetailUiState(
 - [ ] **Step 3: `DetailViewModel.kt` を拡張**
 
 ```kotlin
-package com.example.aiinbox.ui.detail
+package uk.nordtek.aiinbox.ui.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.work.WorkScheduler
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.work.WorkScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -855,7 +855,7 @@ git commit -m "feat(ui): add edit/reprocess/delete actions to DetailViewModel"
 - [ ] **Step 2: `DetailScreen.kt` を編集UI対応に書き直し**
 
 ```kotlin
-package com.example.aiinbox.ui.detail
+package uk.nordtek.aiinbox.ui.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -894,10 +894,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.aiinbox.R
-import com.example.aiinbox.calendar.CalendarIntentBuilder
-import com.example.aiinbox.data.db.ExtractedEvent
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.calendar.CalendarIntentBuilder
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.db.InboxItem
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -1116,15 +1116,15 @@ git commit -m "feat(ui): add editable fields, reprocess, and delete-with-undo to
 - [ ] **Step 1: `CalendarActionReceiver.kt` を作成（通知アクションタップ受け）**
 
 ```kotlin
-package com.example.aiinbox.notification
+package uk.nordtek.aiinbox.notification
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
-import com.example.aiinbox.calendar.CalendarIntentBuilder
-import com.example.aiinbox.data.db.ExtractedEvent
-import com.example.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.calendar.CalendarIntentBuilder
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.repository.InboxRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -1161,7 +1161,7 @@ class CalendarActionReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val ACTION = "com.example.aiinbox.ADD_TO_CALENDAR"
+        const val ACTION = "uk.nordtek.aiinbox.ADD_TO_CALENDAR"
         const val EXTRA_ITEM_ID = "item_id"
         const val EXTRA_NOTIF_ID = "notif_id"
     }
@@ -1175,7 +1175,7 @@ class CalendarActionReceiver : BroadcastReceiver() {
     android:name=".notification.CalendarActionReceiver"
     android:exported="false">
     <intent-filter>
-        <action android:name="com.example.aiinbox.ADD_TO_CALENDAR"/>
+        <action android:name="uk.nordtek.aiinbox.ADD_TO_CALENDAR"/>
     </intent-filter>
 </receiver>
 ```
@@ -1183,16 +1183,16 @@ class CalendarActionReceiver : BroadcastReceiver() {
 - [ ] **Step 3: `NotificationHelper.kt` を拡張**
 
 ```kotlin
-package com.example.aiinbox.notification
+package uk.nordtek.aiinbox.notification
 
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.example.aiinbox.MainActivity
-import com.example.aiinbox.R
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.MainActivity
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.data.db.InboxItem
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -1344,9 +1344,9 @@ object Routes {
 - [ ] **Step 3: `SettingsUiState.kt` / `SettingsViewModel.kt`**
 
 ```kotlin
-package com.example.aiinbox.ui.settings
+package uk.nordtek.aiinbox.ui.settings
 
-import com.example.aiinbox.llm.ModelVariant
+import uk.nordtek.aiinbox.llm.ModelVariant
 
 data class SettingsUiState(
     val currentVariant: ModelVariant? = null,
@@ -1357,7 +1357,7 @@ data class SettingsUiState(
 ```
 
 ```kotlin
-package com.example.aiinbox.ui.settings
+package uk.nordtek.aiinbox.ui.settings
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -1365,9 +1365,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.aiinbox.BuildConfig
-import com.example.aiinbox.llm.ModelManager
-import com.example.aiinbox.work.ModelDownloadWorker
+import uk.nordtek.aiinbox.BuildConfig
+import uk.nordtek.aiinbox.llm.ModelManager
+import uk.nordtek.aiinbox.work.ModelDownloadWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -1406,7 +1406,7 @@ class SettingsViewModel @Inject constructor(
 
     fun onRedownload() {
         viewModelScope.launch {
-            val variant = _state.value.currentVariant ?: com.example.aiinbox.llm.RamDetector
+            val variant = _state.value.currentVariant ?: uk.nordtek.aiinbox.llm.RamDetector
                 .selectVariantForDevice(getApplication())
             modelManager.deleteModel(variant)
             val request = OneTimeWorkRequestBuilder<ModelDownloadWorker>()
@@ -1422,7 +1422,7 @@ class SettingsViewModel @Inject constructor(
 - [ ] **Step 4: `SettingsScreen.kt`**
 
 ```kotlin
-package com.example.aiinbox.ui.settings
+package uk.nordtek.aiinbox.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -1444,7 +1444,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.aiinbox.R
+import uk.nordtek.aiinbox.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1501,7 +1501,7 @@ private fun LocalContext_getString(id: Int): String =
 - [ ] **Step 5: `MainActivity.kt` の NavHost に Settings を追加**
 
 ```kotlin
-import com.example.aiinbox.ui.settings.SettingsScreen
+import uk.nordtek.aiinbox.ui.settings.SettingsScreen
 
 // NavHost 内
 composable(Routes.SETTINGS) {
