@@ -26,9 +26,16 @@ misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
+# Keystore files & signing credentials — MUST never be committed
 *.jks
 *.keystore
+*.p12
+*.pfx
+keystore/
+keystores/
+keystore.properties
+signing.properties
+release-signing.properties
 
 # Google Services (e.g. APIs or Firebase)
 google-services.json
