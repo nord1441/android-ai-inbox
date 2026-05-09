@@ -18,6 +18,7 @@ exclude:
   - release-versioning.md
   - data-safety-guide.md
   - play-console-forms.md
+  - store-listing.md
   - development.md
   - superpowers/
   - "*.gitignore"
