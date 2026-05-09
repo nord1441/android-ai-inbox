@@ -16,6 +16,7 @@ exclude:
   - playstore-release-checklist.md
   - release-signing.md
   - release-versioning.md
+  - data-safety-guide.md
   - development.md
   - superpowers/
   - "*.gitignore"
