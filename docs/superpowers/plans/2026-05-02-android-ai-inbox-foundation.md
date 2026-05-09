@@ -279,16 +279,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.aiinbox"
+    namespace = "uk.nordtek.aiinbox"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.aiinbox"
+        applicationId = "uk.nordtek.aiinbox"
         minSdk = 33
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
-        testInstrumentationRunner = "com.example.aiinbox.HiltTestRunner"
+        testInstrumentationRunner = "uk.nordtek.aiinbox.HiltTestRunner"
         vectorDrawables { useSupportLibrary = true }
     }
 
@@ -391,11 +391,11 @@ dependencies {
 # kotlinx.serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
--keep,includedescriptorclasses class com.example.aiinbox.**$$serializer { *; }
--keepclassmembers class com.example.aiinbox.** {
+-keep,includedescriptorclasses class uk.nordtek.aiinbox.**$$serializer { *; }
+-keepclassmembers class uk.nordtek.aiinbox.** {
     *** Companion;
 }
--keepclasseswithmembers class com.example.aiinbox.** {
+-keepclasseswithmembers class uk.nordtek.aiinbox.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 ```
@@ -476,7 +476,7 @@ dependencies {
 - [ ] **Step 13: `app/src/main/kotlin/com/example/aiinbox/AiInboxApplication.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox
+package uk.nordtek.aiinbox
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
@@ -488,7 +488,7 @@ class AiInboxApplication : Application()
 - [ ] **Step 14: `app/src/main/kotlin/com/example/aiinbox/MainActivity.kt` を作成（プレースホルダ、後のタスクで本実装）**
 
 ```kotlin
-package com.example.aiinbox
+package uk.nordtek.aiinbox
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -565,7 +565,7 @@ git commit -m "build: bootstrap Android Gradle project with Compose + Hilt + Roo
 
 `app/src/test/kotlin/com/example/aiinbox/data/db/InboxItemTest.kt`:
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -609,14 +609,14 @@ class InboxItemTest {
 - [ ] **Step 2: テストが失敗することを確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.InboxItemTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.InboxItemTest
 ```
 Expected: COMPILE FAIL（クラス未定義）
 
 - [ ] **Step 3: `ItemStatus.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 enum class ItemStatus { PENDING, PROCESSING, COMPLETED, FAILED }
 ```
@@ -624,7 +624,7 @@ enum class ItemStatus { PENDING, PROCESSING, COMPLETED, FAILED }
 - [ ] **Step 4: `ExtractedEvent.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 data class ExtractedEvent(
     val title: String,
@@ -638,7 +638,7 @@ data class ExtractedEvent(
 - [ ] **Step 5: `InboxItem.kt` を作成（Roomアノテーションは Task 10 で追加）**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 data class InboxItem(
     val id: String,
@@ -665,7 +665,7 @@ data class InboxItem(
 - [ ] **Step 6: `ContentHint.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 enum class ContentHint { WEB_ARTICLE, CHAT_OR_EMAIL, MEMO, UNKNOWN }
 ```
@@ -673,9 +673,9 @@ enum class ContentHint { WEB_ARTICLE, CHAT_OR_EMAIL, MEMO, UNKNOWN }
 - [ ] **Step 7: `SummarizeResult.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
-import com.example.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
 
 data class SummarizeResult(
     val title: String?,
@@ -692,7 +692,7 @@ data class SummarizeResult(
 - [ ] **Step 8: テストが通ることを確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.InboxItemTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.InboxItemTest
 ```
 Expected: PASS
 
@@ -717,7 +717,7 @@ git commit -m "feat: add core domain types (InboxItem, ExtractedEvent, Summarize
 - [ ] **Step 1: 失敗するテストを書く**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -772,14 +772,14 @@ class TimeConverterTest {
 - [ ] **Step 2: テスト失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.TimeConverterTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.TimeConverterTest
 ```
 Expected: COMPILE FAIL
 
 - [ ] **Step 3: 実装**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -826,7 +826,7 @@ object TimeConverter {
 - [ ] **Step 4: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.TimeConverterTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.TimeConverterTest
 ```
 Expected: PASS（全6件）
 
@@ -851,7 +851,7 @@ git commit -m "feat(llm): add TimeConverter for ISO8601 <-> unix millis with all
 - [ ] **Step 1: テスト**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -894,14 +894,14 @@ class ContentHintDetectorTest {
 - [ ] **Step 2: テスト失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.ContentHintDetectorTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.ContentHintDetectorTest
 ```
 Expected: COMPILE FAIL
 
 - [ ] **Step 3: 実装**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 class ContentHintDetector {
     private val urlRegex = Regex("""\bhttps?://\S+""")
@@ -941,7 +941,7 @@ class ContentHintDetector {
 - [ ] **Step 4: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.ContentHintDetectorTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.ContentHintDetectorTest
 ```
 Expected: PASS
 
@@ -966,7 +966,7 @@ git commit -m "feat(llm): add ContentHintDetector for content type heuristics"
 - [ ] **Step 1: テスト**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -1001,14 +1001,14 @@ class PromptBuilderTest {
 - [ ] **Step 2: テスト失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.PromptBuilderTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.PromptBuilderTest
 ```
 Expected: COMPILE FAIL
 
 - [ ] **Step 3: 実装**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 class PromptBuilder(
     private val maxInputChars: Int = 8000,
@@ -1080,7 +1080,7 @@ class PromptBuilder(
 - [ ] **Step 4: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.PromptBuilderTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.PromptBuilderTest
 ```
 Expected: PASS
 
@@ -1167,7 +1167,7 @@ git commit -m "feat(llm): add PromptBuilder with content-type specific guidance"
 - [ ] **Step 2: 失敗するテストを書く**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -1228,16 +1228,16 @@ class LlmResponseParserTest {
 - [ ] **Step 3: テスト失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.LlmResponseParserTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.LlmResponseParserTest
 ```
 Expected: COMPILE FAIL
 
 - [ ] **Step 4: 実装**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
-import com.example.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import java.time.ZoneId
@@ -1315,7 +1315,7 @@ class LlmResponseParser(private val zone: ZoneId) {
 - [ ] **Step 5: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.LlmResponseParserTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.LlmResponseParserTest
 ```
 Expected: PASS
 
@@ -1340,7 +1340,7 @@ git commit -m "feat(llm): add LlmResponseParser with code-fence and partial JSON
 - [ ] **Step 1: テスト**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
@@ -1380,14 +1380,14 @@ class FakeLlmEngineTest {
 - [ ] **Step 2: テスト失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.FakeLlmEngineTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.FakeLlmEngineTest
 ```
 Expected: COMPILE FAIL
 
 - [ ] **Step 3: `LlmEngine.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
 import kotlinx.coroutines.flow.StateFlow
 
@@ -1404,9 +1404,9 @@ interface LlmEngine {
 - [ ] **Step 4: `FakeLlmEngine.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.llm
+package uk.nordtek.aiinbox.llm
 
-import com.example.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import javax.inject.Inject
@@ -1460,7 +1460,7 @@ class FakeLlmEngine @Inject constructor() : LlmEngine {
 - [ ] **Step 5: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.llm.FakeLlmEngineTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.llm.FakeLlmEngineTest
 ```
 Expected: PASS
 
@@ -1484,11 +1484,11 @@ git commit -m "feat(llm): add LlmEngine interface and FakeLlmEngine for testing"
 - [ ] **Step 1: テスト（Robolectric）**
 
 ```kotlin
-package com.example.aiinbox.calendar
+package uk.nordtek.aiinbox.calendar
 
 import android.content.Intent
 import android.provider.CalendarContract
-import com.example.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -1542,18 +1542,18 @@ class CalendarIntentBuilderTest {
 - [ ] **Step 2: テスト失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.calendar.CalendarIntentBuilderTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.calendar.CalendarIntentBuilderTest
 ```
 Expected: COMPILE FAIL
 
 - [ ] **Step 3: 実装**
 
 ```kotlin
-package com.example.aiinbox.calendar
+package uk.nordtek.aiinbox.calendar
 
 import android.content.Intent
 import android.provider.CalendarContract
-import com.example.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
 
 object CalendarIntentBuilder {
     fun build(event: ExtractedEvent, summary: String?, originalTextSnippet: String?): Intent {
@@ -1589,7 +1589,7 @@ object CalendarIntentBuilder {
 - [ ] **Step 4: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.calendar.CalendarIntentBuilderTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.calendar.CalendarIntentBuilderTest
 ```
 Expected: PASS
 
@@ -1612,7 +1612,7 @@ git commit -m "feat(calendar): add CalendarIntentBuilder for ACTION_INSERT prefi
 - [ ] **Step 1: テスト**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -1654,14 +1654,14 @@ class DbTypeConvertersTest {
 - [ ] **Step 2: テスト失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.DbTypeConvertersTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.DbTypeConvertersTest
 ```
 Expected: COMPILE FAIL
 
 - [ ] **Step 3: 実装**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.TypeConverter
 import kotlinx.serialization.builtins.ListSerializer
@@ -1701,7 +1701,7 @@ class DbTypeConverters {
 - [ ] **Step 4: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.DbTypeConvertersTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.DbTypeConvertersTest
 ```
 Expected: PASS
 
@@ -1724,7 +1724,7 @@ git commit -m "feat(data): add Room TypeConverters for collections and ItemStatu
 - [ ] **Step 1: `ExtractedEvent.kt` を編集**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.ColumnInfo
 
@@ -1740,7 +1740,7 @@ data class ExtractedEvent(
 - [ ] **Step 2: `InboxItem.kt` を編集**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
@@ -1781,7 +1781,7 @@ data class InboxItem(
 - [ ] **Step 3: 既存ユニットテストが引き続き通ることを確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.db.InboxItemTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.db.InboxItemTest
 ```
 Expected: PASS
 
@@ -1802,7 +1802,7 @@ git commit -m "feat(data): annotate InboxItem and ExtractedEvent for Room"
 - [ ] **Step 1: 実装**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -1858,7 +1858,7 @@ git add app/src/main/kotlin/com/example/aiinbox/data/db/InboxDao.kt
 - [ ] **Step 1: 実装**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -1921,7 +1921,7 @@ git commit -m "feat(data): add AppDatabase with InboxItem entity"
 - [ ] **Step 1: テスト**
 
 ```kotlin
-package com.example.aiinbox.data.crypto
+package uk.nordtek.aiinbox.data.crypto
 
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
@@ -1954,14 +1954,14 @@ class KeystorePassphraseProviderTest {
 - [ ] **Step 2: テスト失敗確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.crypto.KeystorePassphraseProviderTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProviderTest
 ```
 Expected: COMPILE FAIL
 
 - [ ] **Step 3: 実装**
 
 ```kotlin
-package com.example.aiinbox.data.crypto
+package uk.nordtek.aiinbox.data.crypto
 
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -2017,7 +2017,7 @@ class KeystorePassphraseProvider @Inject constructor(
 - [ ] **Step 4: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.data.crypto.KeystorePassphraseProviderTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProviderTest
 ```
 Expected: PASS
 
@@ -2040,12 +2040,12 @@ git commit -m "feat(data): add KeystorePassphraseProvider backed by EncryptedSha
 - [ ] **Step 1: 実装**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import android.content.Context
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteOpenHelper
-import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
+import uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProvider
 import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 
 object SqlCipherFactory {
@@ -2076,11 +2076,11 @@ fun buildEncryptedDatabase(
 
 `app/src/androidTest/kotlin/com/example/aiinbox/data/db/AppDatabaseEncryptionTest.kt`:
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
+import uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProvider
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -2149,7 +2149,7 @@ class AppDatabaseEncryptionTest {
 
 `app/src/androidTest/kotlin/com/example/aiinbox/HiltTestRunner.kt`:
 ```kotlin
-package com.example.aiinbox
+package uk.nordtek.aiinbox
 
 import android.app.Application
 import android.content.Context
@@ -2166,7 +2166,7 @@ class HiltTestRunner : AndroidJUnitRunner() {
 - [ ] **Step 4: テスト実行（実機/エミュレータ必要）**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.data.db.AppDatabaseEncryptionTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.data.db.AppDatabaseEncryptionTest
 ```
 Expected: PASS（暗号化されたDBに書けて、ファイルバイト列に平文が現れない）
 
@@ -2191,7 +2191,7 @@ git commit -m "feat(data): wire SQLCipher into Room with passphrase from Keystor
 - [ ] **Step 1: `FtsCallback.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -2299,11 +2299,11 @@ git commit -m "feat(data): add FTS5 virtual table with sync triggers via Room ca
 - [ ] **Step 1: AndroidTestを書く**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
+import uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProvider
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -2393,7 +2393,7 @@ suspend fun searchFts(query: String): List<InboxItem>
 - [ ] **Step 3: テスト実行**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.data.db.InboxDaoFtsTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.data.db.InboxDaoFtsTest
 ```
 Expected: PASS
 
@@ -2418,16 +2418,16 @@ git commit -m "feat(data): add FTS5 search query to InboxDao"
 - [ ] **Step 1: テスト**
 
 ```kotlin
-package com.example.aiinbox.data.repository
+package uk.nordtek.aiinbox.data.repository
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
-import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
-import com.example.aiinbox.data.db.AppDatabase
-import com.example.aiinbox.data.db.ItemStatus
-import com.example.aiinbox.data.db.buildEncryptedDatabase
-import com.example.aiinbox.llm.SummarizeResult
+import uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProvider
+import uk.nordtek.aiinbox.data.db.AppDatabase
+import uk.nordtek.aiinbox.data.db.ItemStatus
+import uk.nordtek.aiinbox.data.db.buildEncryptedDatabase
+import uk.nordtek.aiinbox.llm.SummarizeResult
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -2500,19 +2500,19 @@ class InboxRepositoryTest {
 - [ ] **Step 2: テスト失敗確認**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.data.repository.InboxRepositoryTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.data.repository.InboxRepositoryTest
 ```
 Expected: COMPILE FAIL
 
 - [ ] **Step 3: 実装**
 
 ```kotlin
-package com.example.aiinbox.data.repository
+package uk.nordtek.aiinbox.data.repository
 
-import com.example.aiinbox.data.db.InboxDao
-import com.example.aiinbox.data.db.InboxItem
-import com.example.aiinbox.data.db.ItemStatus
-import com.example.aiinbox.llm.SummarizeResult
+import uk.nordtek.aiinbox.data.db.InboxDao
+import uk.nordtek.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.ItemStatus
+import uk.nordtek.aiinbox.llm.SummarizeResult
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 import javax.inject.Inject
@@ -2621,7 +2621,7 @@ class InboxRepository @Inject constructor(
 - [ ] **Step 4: テスト通過確認**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.data.repository.InboxRepositoryTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.data.repository.InboxRepositoryTest
 ```
 Expected: PASS
 
@@ -2644,13 +2644,13 @@ git commit -m "feat(data): add InboxRepository with CRUD, search, and edit-prese
 - [ ] **Step 1: `DatabaseModule.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.di
+package uk.nordtek.aiinbox.di
 
 import android.content.Context
-import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
-import com.example.aiinbox.data.db.AppDatabase
-import com.example.aiinbox.data.db.InboxDao
-import com.example.aiinbox.data.db.buildEncryptedDatabase
+import uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProvider
+import uk.nordtek.aiinbox.data.db.AppDatabase
+import uk.nordtek.aiinbox.data.db.InboxDao
+import uk.nordtek.aiinbox.data.db.buildEncryptedDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -2683,13 +2683,13 @@ object DatabaseModule {
 - [ ] **Step 2: `LlmModule.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.di
+package uk.nordtek.aiinbox.di
 
-import com.example.aiinbox.llm.ContentHintDetector
-import com.example.aiinbox.llm.FakeLlmEngine
-import com.example.aiinbox.llm.LlmEngine
-import com.example.aiinbox.llm.LlmResponseParser
-import com.example.aiinbox.llm.PromptBuilder
+import uk.nordtek.aiinbox.llm.ContentHintDetector
+import uk.nordtek.aiinbox.llm.FakeLlmEngine
+import uk.nordtek.aiinbox.llm.LlmEngine
+import uk.nordtek.aiinbox.llm.LlmResponseParser
+import uk.nordtek.aiinbox.llm.PromptBuilder
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -2752,7 +2752,7 @@ git commit -m "feat(di): add DatabaseModule and LlmModule (Fake binding for now)
 - [ ] **Step 1: `NotificationChannels.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.notification
+package uk.nordtek.aiinbox.notification
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -2768,14 +2768,14 @@ object NotificationChannels {
         nm.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_SUMMARY_COMPLETE,
-                context.getString(com.example.aiinbox.R.string.notification_channel_summary_complete),
+                context.getString(uk.nordtek.aiinbox.R.string.notification_channel_summary_complete),
                 NotificationManager.IMPORTANCE_LOW,
             )
         )
         nm.createNotificationChannel(
             NotificationChannel(
                 CHANNEL_EVENT_DETECTED,
-                context.getString(com.example.aiinbox.R.string.notification_channel_event_detected),
+                context.getString(uk.nordtek.aiinbox.R.string.notification_channel_event_detected),
                 NotificationManager.IMPORTANCE_DEFAULT,
             )
         )
@@ -2786,16 +2786,16 @@ object NotificationChannels {
 - [ ] **Step 2: `NotificationHelper.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.notification
+package uk.nordtek.aiinbox.notification
 
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.example.aiinbox.MainActivity
-import com.example.aiinbox.R
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.MainActivity
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.data.db.InboxItem
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -2868,7 +2868,7 @@ git commit -m "feat(notification): add channels setup and completion notificatio
 - [ ] **Step 1: `AiInboxApplication.kt` を編集**
 
 ```kotlin
-package com.example.aiinbox
+package uk.nordtek.aiinbox
 
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
@@ -2931,17 +2931,17 @@ git commit -m "feat(work): wire HiltWorkerFactory into Application config"
 - [ ] **Step 1: `SummarizeWorker.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.llm.ContentHintDetector
-import com.example.aiinbox.llm.LlmEngine
-import com.example.aiinbox.llm.ModelVariant
-import com.example.aiinbox.notification.NotificationHelper
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.llm.ContentHintDetector
+import uk.nordtek.aiinbox.llm.LlmEngine
+import uk.nordtek.aiinbox.llm.ModelVariant
+import uk.nordtek.aiinbox.notification.NotificationHelper
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -2988,7 +2988,7 @@ class SummarizeWorker @AssistedInject constructor(
 - [ ] **Step 2: `WorkScheduler.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.work.Constraints
@@ -3024,7 +3024,7 @@ class WorkScheduler @Inject constructor(
 - [ ] **Step 3: AndroidTestを書く**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
@@ -3035,14 +3035,14 @@ import androidx.work.ListenableWorker
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
-import com.example.aiinbox.data.crypto.KeystorePassphraseProvider
-import com.example.aiinbox.data.db.AppDatabase
-import com.example.aiinbox.data.db.ItemStatus
-import com.example.aiinbox.data.db.buildEncryptedDatabase
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.llm.ContentHintDetector
-import com.example.aiinbox.llm.FakeLlmEngine
-import com.example.aiinbox.notification.NotificationHelper
+import uk.nordtek.aiinbox.data.crypto.KeystorePassphraseProvider
+import uk.nordtek.aiinbox.data.db.AppDatabase
+import uk.nordtek.aiinbox.data.db.ItemStatus
+import uk.nordtek.aiinbox.data.db.buildEncryptedDatabase
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.llm.ContentHintDetector
+import uk.nordtek.aiinbox.llm.FakeLlmEngine
+import uk.nordtek.aiinbox.notification.NotificationHelper
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -3097,16 +3097,16 @@ class SummarizeWorkerTest {
 
 `app/src/androidTest/kotlin/com/example/aiinbox/work/TestSummarizeWorkerFactory.kt`:
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.llm.ContentHintDetector
-import com.example.aiinbox.llm.LlmEngine
-import com.example.aiinbox.notification.NotificationHelper
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.llm.ContentHintDetector
+import uk.nordtek.aiinbox.llm.LlmEngine
+import uk.nordtek.aiinbox.notification.NotificationHelper
 
 class TestSummarizeWorkerFactory(
     private val repo: InboxRepository,
@@ -3131,7 +3131,7 @@ class TestSummarizeWorkerFactory(
 - [ ] **Step 5: テスト実行**
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest --tests com.example.aiinbox.work.SummarizeWorkerTest
+./gradlew :app:connectedDebugAndroidTest --tests uk.nordtek.aiinbox.work.SummarizeWorkerTest
 ```
 Expected: PASS
 
@@ -3154,16 +3154,16 @@ git commit -m "feat(work): add SummarizeWorker with FakeLlmEngine and WorkSchedu
 - [ ] **Step 1: `ShareReceiverActivity.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.share
+package uk.nordtek.aiinbox.share
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.aiinbox.R
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.work.WorkScheduler
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.work.WorkScheduler
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -3241,7 +3241,7 @@ git commit -m "feat(share): add ShareReceiverActivity with text/plain intent fil
 - [ ] **Step 1: `Color.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.theme
+package uk.nordtek.aiinbox.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -3257,7 +3257,7 @@ val Pink80 = Color(0xFFEFB8C8)
 - [ ] **Step 2: `Type.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.theme
+package uk.nordtek.aiinbox.ui.theme
 
 import androidx.compose.material3.Typography
 
@@ -3267,7 +3267,7 @@ val Typography = Typography()
 - [ ] **Step 3: `Theme.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.theme
+package uk.nordtek.aiinbox.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -3324,9 +3324,9 @@ git commit -m "feat(ui): add Material 3 theme scaffolding"
 - [ ] **Step 1: `InboxUiState.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.inbox
+package uk.nordtek.aiinbox.ui.inbox
 
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.InboxItem
 
 data class InboxUiState(
     val items: List<InboxItem> = emptyList(),
@@ -3337,12 +3337,12 @@ data class InboxUiState(
 - [ ] **Step 2: テスト**
 
 ```kotlin
-package com.example.aiinbox.ui.inbox
+package uk.nordtek.aiinbox.ui.inbox
 
 import app.cash.turbine.test
-import com.example.aiinbox.data.db.InboxItem
-import com.example.aiinbox.data.db.ItemStatus
-import com.example.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.ItemStatus
+import uk.nordtek.aiinbox.data.repository.InboxRepository
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -3389,11 +3389,11 @@ class InboxViewModelTest {
 
 `InboxViewModel.kt`:
 ```kotlin
-package com.example.aiinbox.ui.inbox
+package uk.nordtek.aiinbox.ui.inbox
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.repository.InboxRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -3419,7 +3419,7 @@ class InboxViewModel @Inject constructor(
 - [ ] **Step 4: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.ui.inbox.InboxViewModelTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.ui.inbox.InboxViewModelTest
 ```
 Expected: PASS
 
@@ -3441,7 +3441,7 @@ git commit -m "feat(ui): add InboxViewModel observing repository all-items flow"
 - [ ] **Step 1: 実装**
 
 ```kotlin
-package com.example.aiinbox.ui.inbox
+package uk.nordtek.aiinbox.ui.inbox
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -3466,9 +3466,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.aiinbox.R
-import com.example.aiinbox.data.db.InboxItem
-import com.example.aiinbox.data.db.ItemStatus
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.ItemStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -3586,9 +3586,9 @@ git commit -m "feat(ui): add basic InboxScreen with list of items and status chi
 - [ ] **Step 1: `DetailUiState.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.detail
+package uk.nordtek.aiinbox.ui.detail
 
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.InboxItem
 
 data class DetailUiState(
     val item: InboxItem? = null,
@@ -3599,13 +3599,13 @@ data class DetailUiState(
 - [ ] **Step 2: テスト**
 
 ```kotlin
-package com.example.aiinbox.ui.detail
+package uk.nordtek.aiinbox.ui.detail
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.example.aiinbox.data.db.InboxItem
-import com.example.aiinbox.data.db.ItemStatus
-import com.example.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.ItemStatus
+import uk.nordtek.aiinbox.data.repository.InboxRepository
 import com.google.common.truth.Truth.assertThat
 import io.mockk.every
 import io.mockk.mockk
@@ -3649,12 +3649,12 @@ class DetailViewModelTest {
 - [ ] **Step 3: 実装**
 
 ```kotlin
-package com.example.aiinbox.ui.detail
+package uk.nordtek.aiinbox.ui.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.repository.InboxRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -3687,7 +3687,7 @@ class DetailViewModel @Inject constructor(
 - [ ] **Step 4: テスト通過確認**
 
 ```bash
-./gradlew :app:testDebugUnitTest --tests com.example.aiinbox.ui.detail.DetailViewModelTest
+./gradlew :app:testDebugUnitTest --tests uk.nordtek.aiinbox.ui.detail.DetailViewModelTest
 ```
 Expected: PASS
 
@@ -3709,7 +3709,7 @@ git commit -m "feat(ui): add DetailViewModel observing single inbox item"
 - [ ] **Step 1: 実装**
 
 ```kotlin
-package com.example.aiinbox.ui.detail
+package uk.nordtek.aiinbox.ui.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -3735,10 +3735,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.aiinbox.R
-import com.example.aiinbox.calendar.CalendarIntentBuilder
-import com.example.aiinbox.data.db.ExtractedEvent
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.R
+import uk.nordtek.aiinbox.calendar.CalendarIntentBuilder
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.db.InboxItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -3853,7 +3853,7 @@ git commit -m "feat(ui): add read-only DetailScreen with calendar action"
 - [ ] **Step 1: `Routes.kt` を作成**
 
 ```kotlin
-package com.example.aiinbox.ui.navigation
+package uk.nordtek.aiinbox.ui.navigation
 
 object Routes {
     const val INBOX = "inbox"
@@ -3865,7 +3865,7 @@ object Routes {
 - [ ] **Step 2: `MainActivity.kt` を更新**
 
 ```kotlin
-package com.example.aiinbox
+package uk.nordtek.aiinbox
 
 import android.content.Intent
 import android.os.Bundle
@@ -3879,12 +3879,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.aiinbox.notification.NotificationHelper
-import com.example.aiinbox.ui.detail.DetailScreen
-import com.example.aiinbox.ui.detail.DetailViewModel
-import com.example.aiinbox.ui.inbox.InboxScreen
-import com.example.aiinbox.ui.navigation.Routes
-import com.example.aiinbox.ui.theme.AiInboxTheme
+import uk.nordtek.aiinbox.notification.NotificationHelper
+import uk.nordtek.aiinbox.ui.detail.DetailScreen
+import uk.nordtek.aiinbox.ui.detail.DetailViewModel
+import uk.nordtek.aiinbox.ui.inbox.InboxScreen
+import uk.nordtek.aiinbox.ui.navigation.Routes
+import uk.nordtek.aiinbox.ui.theme.AiInboxTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -3964,8 +3964,8 @@ Expected: BUILD SUCCESSFUL、エミュレータ/実機にインストールさ�
 - [ ] テキストに「__FAKE_EVENT__」を含めて共有 → 詳細画面に「📅」バッジ + イベントカード + 「カレンダーに追加」ボタンが出る
 - [ ] 「カレンダーに追加」をタップ → 標準カレンダーアプリのプリフィル画面が開く（タイトル・場所・時刻が入っている）
 - [ ] アプリを完全終了 → 再起動 → 保存されたアイテムが残っている（暗号化DBの永続性確認）
-- [ ] `adb shell run-as com.example.aiinbox.debug ls databases/` で `inbox.db` が存在
-- [ ] `adb shell run-as com.example.aiinbox.debug cat databases/inbox.db | grep -a "PLAINTEXT_MARKER" || echo OK` → 平文が見えない（暗号化確認）
+- [ ] `adb shell run-as uk.nordtek.aiinbox.debug ls databases/` で `inbox.db` が存在
+- [ ] `adb shell run-as uk.nordtek.aiinbox.debug cat databases/inbox.db | grep -a "PLAINTEXT_MARKER" || echo OK` → 平文が見えない（暗号化確認）
 
 - [ ] **Step 4: Plan 1完了マーカーコミット**
 

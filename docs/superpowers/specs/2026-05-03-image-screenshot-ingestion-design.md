@@ -50,7 +50,7 @@
 ### 4.1 パッケージ構成（追加・変更）
 
 ```
-com.example.aiinbox/
+uk.nordtek.aiinbox/
 ├── share/
 │   └── ShareReceiverActivity.kt          ← 既存：image/* 対応で拡張
 ├── ocr/                                  ← 新規パッケージ

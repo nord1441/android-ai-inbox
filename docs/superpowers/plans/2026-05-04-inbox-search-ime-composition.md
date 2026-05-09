@@ -29,7 +29,7 @@ There is no test file in scope. The change is verified manually on the connected
 
 - [ ] **Step 1: Add the required imports**
 
-Locate the import block at the top of `InboxScreen.kt` (currently ending around line 48 with `import com.example.aiinbox.data.db.ItemStatus`). Add these four imports in alphabetical order within the existing `androidx.compose.*` group:
+Locate the import block at the top of `InboxScreen.kt` (currently ending around line 48 with `import uk.nordtek.aiinbox.data.db.ItemStatus`). Add these four imports in alphabetical order within the existing `androidx.compose.*` group:
 
 ```kotlin
 import androidx.compose.runtime.LaunchedEffect
@@ -96,7 +96,7 @@ In Android Studio, **Build → Make Project** (or `./gradlew :app:assembleDebug`
 
 - [ ] **Step 4: Install the new APK on the connected device**
 
-In Android Studio click **Run 'app'**, or from the terminal run `./gradlew :app:installDebug && adb shell am start -n com.example.aiinbox.debug/com.example.aiinbox.MainActivity`. Expected: the app launches and the Inbox screen is visible. The model file in `files/models/` is preserved across upgrade installs (unless Android Studio's Run config has "Uninstall existing APK" enabled — see `docs/development.md`).
+In Android Studio click **Run 'app'**, or from the terminal run `./gradlew :app:installDebug && adb shell am start -n uk.nordtek.aiinbox.debug/uk.nordtek.aiinbox.MainActivity`. Expected: the app launches and the Inbox screen is visible. The model file in `files/models/` is preserved across upgrade installs (unless Android Studio's Run config has "Uninstall existing APK" enabled — see `docs/development.md`).
 
 - [ ] **Step 5: Manual verification — Japanese IME**
 

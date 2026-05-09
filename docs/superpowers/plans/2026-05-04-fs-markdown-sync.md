@@ -134,7 +134,7 @@ In `InboxItem.kt`, inside the `data class InboxItem(...)` constructor, add (afte
 - [ ] **Step 2: Create `FsSyncStateEntity`**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -157,7 +157,7 @@ data class FsSyncStateEntity(
 - [ ] **Step 3: Create `FsSyncStateDao`**
 
 ```kotlin
-package com.example.aiinbox.data.db
+package uk.nordtek.aiinbox.data.db
 
 import androidx.room.Dao
 import androidx.room.Query
@@ -190,7 +190,7 @@ In `AppDatabase.kt`:
 In `app/src/main/kotlin/com/example/aiinbox/di/DatabaseModule.kt`, add the import and the provider:
 
 ```kotlin
-import com.example.aiinbox.data.db.FsSyncStateDao
+import uk.nordtek.aiinbox.data.db.FsSyncStateDao
 // ...inside the object:
 @Provides
 fun provideFsSyncStateDao(db: AppDatabase): FsSyncStateDao = db.fsSyncStateDao()
@@ -202,7 +202,7 @@ fun provideFsSyncStateDao(db: AppDatabase): FsSyncStateDao = db.fsSyncStateDao()
 ./gradlew --no-daemon :app:kspDebugKotlin
 ```
 
-Expected: `app/schemas/com.example.aiinbox.data.db.AppDatabase/3.json` is created. Stage it.
+Expected: `app/schemas/uk.nordtek.aiinbox.data.db.AppDatabase/3.json` is created. Stage it.
 
 - [ ] **Step 7: Compile**
 
@@ -220,7 +220,7 @@ git add app/src/main/kotlin/com/example/aiinbox/data/db/InboxItem.kt \
         app/src/main/kotlin/com/example/aiinbox/data/db/FsSyncStateEntity.kt \
         app/src/main/kotlin/com/example/aiinbox/data/db/FsSyncStateDao.kt \
         app/src/main/kotlin/com/example/aiinbox/di/DatabaseModule.kt \
-        app/schemas/com.example.aiinbox.data.db.AppDatabase/3.json
+        app/schemas/uk.nordtek.aiinbox.data.db.AppDatabase/3.json
 GIT_AUTHOR_NAME='nord14541' GIT_AUTHOR_EMAIL='nord14541@gmail.com' \
 GIT_COMMITTER_NAME='nord14541' GIT_COMMITTER_EMAIL='nord14541@gmail.com' \
   git commit -m "feat(db): add inbox_items.deleted_at + fs_sync_state for FS sync"
@@ -350,17 +350,17 @@ Append to `InboxRepository.kt`:
  * tombstones. FS sync compares this against the .md files on disk to
  * compute export / import / no-op per id.
  */
-suspend fun allLocalRefs(): List<com.example.aiinbox.data.db.InboxRefRow> =
+suspend fun allLocalRefs(): List<uk.nordtek.aiinbox.data.db.InboxRefRow> =
     dao.allRefsIncludingDeleted()
 
-suspend fun getWithAttachmentsIncludingDeleted(id: String): com.example.aiinbox.data.db.InboxItemWithAttachments? =
+suspend fun getWithAttachmentsIncludingDeleted(id: String): uk.nordtek.aiinbox.data.db.InboxItemWithAttachments? =
     dao.getWithAttachmentsIncludingDeleted(id)
 
 /**
  * Insert a fresh row from a Markdown envelope (FS sync import path).
  * Idempotent against the id; uses Room @Upsert so re-imports overwrite.
  */
-suspend fun insertFromFile(item: com.example.aiinbox.data.db.InboxItem, attachments: List<com.example.aiinbox.data.db.Attachment>) {
+suspend fun insertFromFile(item: uk.nordtek.aiinbox.data.db.InboxItem, attachments: List<uk.nordtek.aiinbox.data.db.Attachment>) {
     dao.upsert(item)
     if (attachments.isNotEmpty()) attachmentDao.insertAll(attachments)
 }
@@ -397,7 +397,7 @@ GIT_COMMITTER_NAME='nord14541' GIT_COMMITTER_EMAIL='nord14541@gmail.com' \
 - [ ] **Step 1: Define `MarkdownEnvelope`**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -453,12 +453,12 @@ data class MarkdownEnvelope(
 - [ ] **Step 2: Implement `MarkdownExporter`**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
-import com.example.aiinbox.data.db.Attachment
-import com.example.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.Attachment
+import uk.nordtek.aiinbox.data.db.InboxItem
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneId
@@ -575,13 +575,13 @@ class MarkdownExporter @Inject constructor(
 `app/src/test/kotlin/com/example/aiinbox/sync/MarkdownExporterTest.kt`:
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
-import com.example.aiinbox.data.db.Attachment
-import com.example.aiinbox.data.db.AttachmentKind
-import com.example.aiinbox.data.db.ExtractedEvent
-import com.example.aiinbox.data.db.InboxItem
-import com.example.aiinbox.data.db.ItemStatus
+import uk.nordtek.aiinbox.data.db.Attachment
+import uk.nordtek.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.ItemStatus
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.ZoneId
@@ -680,7 +680,7 @@ class MarkdownExporterTest {
 - [ ] **Step 4: Run the tests**
 
 ```
-./gradlew --no-daemon :app:testDebugUnitTest --tests "com.example.aiinbox.sync.MarkdownExporterTest"
+./gradlew --no-daemon :app:testDebugUnitTest --tests "uk.nordtek.aiinbox.sync.MarkdownExporterTest"
 ```
 
 Expected: 4 PASS.
@@ -707,7 +707,7 @@ GIT_COMMITTER_NAME='nord14541' GIT_COMMITTER_EMAIL='nord14541@gmail.com' \
 - [ ] **Step 1: Implement the importer**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlException
@@ -770,7 +770,7 @@ class MarkdownImporter @Inject constructor() {
 `app/src/test/kotlin/com/example/aiinbox/sync/MarkdownImporterTest.kt`:
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -892,7 +892,7 @@ private val yaml = Yaml(
 - [ ] **Step 3: Run the tests**
 
 ```
-./gradlew --no-daemon :app:testDebugUnitTest --tests "com.example.aiinbox.sync.MarkdownImporterTest"
+./gradlew --no-daemon :app:testDebugUnitTest --tests "uk.nordtek.aiinbox.sync.MarkdownImporterTest"
 ```
 
 Expected: 6 PASS.
@@ -918,7 +918,7 @@ GIT_COMMITTER_NAME='nord14541' GIT_COMMITTER_EMAIL='nord14541@gmail.com' \
 - [ ] **Step 1: Implement `FsSyncFolderStore`**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
@@ -963,7 +963,7 @@ open class FsSyncFolderStore @Inject constructor(
 - [ ] **Step 2: Implement `SafFolderAccess`**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 import android.content.Context
 import android.net.Uri
@@ -1094,9 +1094,9 @@ GIT_COMMITTER_NAME='nord14541' GIT_COMMITTER_EMAIL='nord14541@gmail.com' \
 - [ ] **Step 1: Define the diff types**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
-import com.example.aiinbox.data.db.InboxRefRow
+import uk.nordtek.aiinbox.data.db.InboxRefRow
 
 /**
  * Pure-function diff between local DB state (every id with deleted_at) and
@@ -1156,9 +1156,9 @@ class FsSyncEngine {
 - [ ] **Step 2: Write the diff tests**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
-import com.example.aiinbox.data.db.InboxRefRow
+import uk.nordtek.aiinbox.data.db.InboxRefRow
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -1222,7 +1222,7 @@ class FsSyncEngineDiffTest {
 - [ ] **Step 3: Run the tests**
 
 ```
-./gradlew --no-daemon :app:testDebugUnitTest --tests "com.example.aiinbox.sync.FsSyncEngineDiffTest"
+./gradlew --no-daemon :app:testDebugUnitTest --tests "uk.nordtek.aiinbox.sync.FsSyncEngineDiffTest"
 ```
 
 Expected: 8 PASS.
@@ -1248,17 +1248,17 @@ GIT_COMMITTER_NAME='nord14541' GIT_COMMITTER_EMAIL='nord14541@gmail.com' \
 - [ ] **Step 1: Replace `FsSyncEngine.kt` with the class form (orchestration + diff in companion)**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 import androidx.documentfile.provider.DocumentFile
-import com.example.aiinbox.data.db.Attachment
-import com.example.aiinbox.data.db.AttachmentKind
-import com.example.aiinbox.data.db.ExtractedEvent
-import com.example.aiinbox.data.db.InboxItem
-import com.example.aiinbox.data.db.InboxRefRow
-import com.example.aiinbox.data.db.ItemStatus
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.data.db.Attachment
+import uk.nordtek.aiinbox.data.db.AttachmentKind
+import uk.nordtek.aiinbox.data.db.ExtractedEvent
+import uk.nordtek.aiinbox.data.db.InboxItem
+import uk.nordtek.aiinbox.data.db.InboxRefRow
+import uk.nordtek.aiinbox.data.db.ItemStatus
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
 import java.time.OffsetDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -1482,7 +1482,7 @@ private fun rem(id: String, isTombstone: Boolean = false) =
 Re-run the diff tests to confirm they still pass:
 
 ```
-./gradlew --no-daemon :app:testDebugUnitTest --tests "com.example.aiinbox.sync.FsSyncEngineDiffTest"
+./gradlew --no-daemon :app:testDebugUnitTest --tests "uk.nordtek.aiinbox.sync.FsSyncEngineDiffTest"
 ```
 
 Expected: 8 PASS.
@@ -1518,7 +1518,7 @@ GIT_COMMITTER_NAME='nord14541' GIT_COMMITTER_EMAIL='nord14541@gmail.com' \
 - [ ] **Step 1: `FsSyncState`**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 sealed interface FsSyncState {
     object Idle : FsSyncState
@@ -1530,9 +1530,9 @@ sealed interface FsSyncState {
 - [ ] **Step 2: `FsSyncStateRepository`**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
-import com.example.aiinbox.data.db.FsSyncStateDao
+import uk.nordtek.aiinbox.data.db.FsSyncStateDao
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -1559,7 +1559,7 @@ class FsSyncStateRepository @Inject constructor(
 - [ ] **Step 3: `FsSyncCoordinator`**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 import android.content.Context
 import androidx.work.Constraints
@@ -1569,7 +1569,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.aiinbox.work.FsSyncWorker
+import uk.nordtek.aiinbox.work.FsSyncWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -1609,17 +1609,17 @@ class FsSyncCoordinator @Inject constructor(
 - [ ] **Step 4: `FsSyncWorker`**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.aiinbox.data.db.FsSyncStateDao
-import com.example.aiinbox.data.db.FsSyncStateEntity
-import com.example.aiinbox.sync.FsSyncEngine
-import com.example.aiinbox.sync.FsSyncFolderStore
-import com.example.aiinbox.sync.FsSyncStateRepository
+import uk.nordtek.aiinbox.data.db.FsSyncStateDao
+import uk.nordtek.aiinbox.data.db.FsSyncStateEntity
+import uk.nordtek.aiinbox.sync.FsSyncEngine
+import uk.nordtek.aiinbox.sync.FsSyncFolderStore
+import uk.nordtek.aiinbox.sync.FsSyncStateRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -1668,7 +1668,7 @@ class FsSyncWorker @AssistedInject constructor(
 - [ ] **Step 5: `FsSyncModule`**
 
 ```kotlin
-package com.example.aiinbox.di
+package uk.nordtek.aiinbox.di
 
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -1722,7 +1722,7 @@ Append to the `data class SettingsUiState(...)` constructor:
 ```kotlin
 val fsSyncFolderUri: String? = null,
 val fsSyncFolderName: String? = null,
-val fsSyncRuntime: com.example.aiinbox.sync.FsSyncState = com.example.aiinbox.sync.FsSyncState.Idle,
+val fsSyncRuntime: uk.nordtek.aiinbox.sync.FsSyncState = uk.nordtek.aiinbox.sync.FsSyncState.Idle,
 val fsSyncLastFullSyncAt: Long? = null,
 val fsSyncIntervalMinutes: Long? = 30L,
 ```
@@ -1849,11 +1849,11 @@ Card(modifier = Modifier.fillMaxWidth()) {
             }
             Spacer(Modifier.height(12.dp))
             val statusText = when (val rt = s.fsSyncRuntime) {
-                com.example.aiinbox.sync.FsSyncState.Idle ->
+                uk.nordtek.aiinbox.sync.FsSyncState.Idle ->
                     stringResource(R.string.settings_fs_sync_status_idle)
-                com.example.aiinbox.sync.FsSyncState.Running ->
+                uk.nordtek.aiinbox.sync.FsSyncState.Running ->
                     stringResource(R.string.settings_fs_sync_status_running)
-                is com.example.aiinbox.sync.FsSyncState.Error ->
+                is uk.nordtek.aiinbox.sync.FsSyncState.Error ->
                     stringResource(R.string.settings_fs_sync_status_error, rt.message ?: "")
             }
             Text(statusText)
@@ -1863,7 +1863,7 @@ Card(modifier = Modifier.fillMaxWidth()) {
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = viewModel::onFsSyncNowClicked,
-                enabled = s.fsSyncRuntime !is com.example.aiinbox.sync.FsSyncState.Running,
+                enabled = s.fsSyncRuntime !is uk.nordtek.aiinbox.sync.FsSyncState.Running,
             ) { Text(stringResource(R.string.settings_fs_sync_now)) }
             Spacer(Modifier.height(8.dp))
             FsSyncIntervalDropdown(
@@ -1996,15 +1996,15 @@ So a tombstone reaches disk within seconds rather than waiting for the next peri
 - [ ] **Step 4: Smoke test using a temp directory as a fake SAF tree**
 
 ```kotlin
-package com.example.aiinbox.sync
+package uk.nordtek.aiinbox.sync
 
 import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.aiinbox.data.db.AppDatabase
-import com.example.aiinbox.data.repository.InboxRepository
-import com.example.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.data.db.AppDatabase
+import uk.nordtek.aiinbox.data.repository.InboxRepository
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
@@ -2060,7 +2060,7 @@ class FsSyncSafSmokeTest {
 - [ ] **Step 5: Run smoke test**
 
 ```
-./gradlew --no-daemon :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.example.aiinbox.sync.FsSyncSafSmokeTest
+./gradlew --no-daemon :app:connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=uk.nordtek.aiinbox.sync.FsSyncSafSmokeTest
 ```
 
 Expected: PASS.
@@ -2088,19 +2088,19 @@ GIT_COMMITTER_NAME='nord14541' GIT_COMMITTER_EMAIL='nord14541@gmail.com' \
 - [ ] **Step 1: Implement the worker**
 
 ```kotlin
-package com.example.aiinbox.work
+package uk.nordtek.aiinbox.work
 
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.aiinbox.data.db.AttachmentDao
-import com.example.aiinbox.data.db.InboxDao
-import com.example.aiinbox.data.storage.EncryptedImageStore
-import com.example.aiinbox.sync.FsSyncFolderStore
-import com.example.aiinbox.sync.MarkdownExporter
-import com.example.aiinbox.sync.SafFolderAccess
+import uk.nordtek.aiinbox.data.db.AttachmentDao
+import uk.nordtek.aiinbox.data.db.InboxDao
+import uk.nordtek.aiinbox.data.storage.EncryptedImageStore
+import uk.nordtek.aiinbox.sync.FsSyncFolderStore
+import uk.nordtek.aiinbox.sync.MarkdownExporter
+import uk.nordtek.aiinbox.sync.SafFolderAccess
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -2170,7 +2170,7 @@ suspend fun physicalDeleteForItem(itemId: String)
 androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
     "fs_tombstone_gc",
     androidx.work.ExistingPeriodicWorkPolicy.KEEP,
-    androidx.work.PeriodicWorkRequestBuilder<com.example.aiinbox.work.FsTombstoneGcWorker>(
+    androidx.work.PeriodicWorkRequestBuilder<uk.nordtek.aiinbox.work.FsTombstoneGcWorker>(
         1, java.util.concurrent.TimeUnit.DAYS,
     ).build(),
 )

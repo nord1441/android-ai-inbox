@@ -17,10 +17,9 @@
 
 ## Critical（提出前に必ず）
 
-- [ ] **`applicationId` を本番用に変更**
-  - `app/build.gradle.kts:11, 15` の `namespace` と `applicationId` を `com.example.aiinbox` から自分のドメインベースに変更（例: `dev.nord14541.aiinbox`）
-  - **一度 publish したら永久に変えられない**ので慎重に決める
-  - パッケージリネームは IDE のリファクタ機能で全 import を一括更新
+- [x] **`applicationId` を本番用に変更**
+  - `com.example.aiinbox` → `uk.nordtek.aiinbox`（保有ドメイン `nordtek.uk` ベース）
+  - **一度 publish したら永久に変えられない**ので慎重に決めた
 
 - [ ] **アプリアイコンの作成と差し替え**
   - 現状: `AndroidManifest.xml:14` で `android:icon="@android:drawable/sym_def_app_icon"`（システム placeholder）

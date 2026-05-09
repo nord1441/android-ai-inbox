@@ -1,11 +1,11 @@
 # kotlinx.serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
--keep,includedescriptorclasses class com.example.aiinbox.**$$serializer { *; }
--keepclassmembers class com.example.aiinbox.** {
+-keep,includedescriptorclasses class uk.nordtek.aiinbox.**$$serializer { *; }
+-keepclassmembers class uk.nordtek.aiinbox.** {
     *** Companion;
 }
--keepclasseswithmembers class com.example.aiinbox.** {
+-keepclasseswithmembers class uk.nordtek.aiinbox.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 

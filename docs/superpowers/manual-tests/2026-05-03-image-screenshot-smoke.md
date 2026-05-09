@@ -26,7 +26,7 @@
 1. リストでスワイプ削除 → 5秒以内に「Undo」タップ
 2. 期待: アイテムも添付サムネも復活
 3. 別のアイテムを削除 → Undo せず10秒待つ
-4. `adb shell run-as com.example.aiinbox.debug ls files/attachments` で対応ファイルが消えていることを確認
+4. `adb shell run-as uk.nordtek.aiinbox.debug ls files/attachments` で対応ファイルが消えていることを確認
 
 ## 5. FTS 検索
 1. OCR が完了したアイテムについて、画像内の単語で検索

@@ -8,16 +8,16 @@ plugins {
 }
 
 android {
-    namespace = "com.example.aiinbox"
+    namespace = "uk.nordtek.aiinbox"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.aiinbox"
+        applicationId = "uk.nordtek.aiinbox"
         minSdk = 33
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
-        testInstrumentationRunner = "com.example.aiinbox.HiltTestRunner"
+        testInstrumentationRunner = "uk.nordtek.aiinbox.HiltTestRunner"
         vectorDrawables { useSupportLibrary = true }
     }
 
