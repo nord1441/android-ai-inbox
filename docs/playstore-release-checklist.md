@@ -26,11 +26,11 @@
   - 必要: Adaptive icon（foreground / background レイヤー）を `res/mipmap-anydpi-v26/` に配置
   - 加えて Play Console 提出用の 512×512 PNG ハイレゾアイコン
 
-- [ ] **release 用 signing config の追加**
-  - `app/build.gradle.kts:24-29` の `buildTypes.release` に `signingConfig` が未指定（unsigned）
-  - upload keystore を生成 → `~/.gradle/gradle.properties` 経由でパスワード注入 → `signingConfigs.release` を追加
-  - **keystore とパスワードはリポジトリに絶対コミットしない**
-  - Play App Signing を有効化（Play Console 側で upload key を登録、本番署名は Play 管理）
+- [ ] **release 用 signing config の有効化**
+  - Gradle 側のスキャフォールディングは完了: `app/build.gradle.kts` が `AI_INBOX_RELEASE_*` プロパティを読み、揃っていれば `signingConfigs.release` を自動生成 → `buildTypes.release.signingConfig` に紐付ける
+  - 残作業（手作業）: keystore 生成 → `~/.gradle/gradle.properties` への資格情報設定 → Play Console での Play App Signing 登録 → backup
+  - 手順とバックアップ要件: [`docs/release-signing.md`](release-signing.md)
+  - **keystore とパスワードはリポジトリに絶対コミットしない**（`.gitignore` で `*.jks` / `keystore.properties` 等を除外済み）
 
 ## Important
 

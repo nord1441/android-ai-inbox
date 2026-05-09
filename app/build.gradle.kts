@@ -7,6 +7,17 @@ plugins {
     alias(libs.plugins.hilt)
 }
 
+// Release signing credentials are read from project properties
+// (typically supplied via ~/.gradle/gradle.properties — never via the repo).
+// See docs/release-signing.md for the full setup and backup procedure.
+val releaseStoreFile = providers.gradleProperty("AI_INBOX_RELEASE_STORE_FILE").orNull
+val releaseStorePassword = providers.gradleProperty("AI_INBOX_RELEASE_STORE_PASSWORD").orNull
+val releaseKeyAlias = providers.gradleProperty("AI_INBOX_RELEASE_KEY_ALIAS").orNull
+val releaseKeyPassword = providers.gradleProperty("AI_INBOX_RELEASE_KEY_PASSWORD").orNull
+val hasReleaseSigning = listOf(
+    releaseStoreFile, releaseStorePassword, releaseKeyAlias, releaseKeyPassword,
+).all { !it.isNullOrBlank() }
+
 android {
     namespace = "uk.nordtek.aiinbox"
     compileSdk = 35
@@ -21,11 +32,23 @@ android {
         vectorDrawables { useSupportLibrary = true }
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.findByName("release")
         }
         debug {
             applicationIdSuffix = ".debug"
