@@ -21,21 +21,23 @@
   - `com.example.aiinbox` → `uk.nordtek.aiinbox`（保有ドメイン `nordtek.uk` ベース）
   - **一度 publish したら永久に変えられない**ので慎重に決めた
 
-- [ ] **アプリアイコンの作成と差し替え**
-  - 現状: `AndroidManifest.xml:14` で `android:icon="@android:drawable/sym_def_app_icon"`（システム placeholder）
-  - 必要: Adaptive icon（foreground / background レイヤー）を `res/mipmap-anydpi-v26/` に配置
-  - 加えて Play Console 提出用の 512×512 PNG ハイレゾアイコン
+- [x] **アプリアイコンの作成と差し替え**
+  - Adaptive icon (foreground / background) を `res/mipmap-anydpi-v26/` に配置（PR #8）
+  - Play Console 提出用 512×512 PNG ハイレゾアイコンを `art/ic_launcher_512.png` に配置
 
-- [ ] **release 用 signing config の有効化**
-  - Gradle 側のスキャフォールディングは完了: `app/build.gradle.kts` が `AI_INBOX_RELEASE_*` プロパティを読み、揃っていれば `signingConfigs.release` を自動生成 → `buildTypes.release.signingConfig` に紐付ける
-  - 残作業（手作業）: keystore 生成 → `~/.gradle/gradle.properties` への資格情報設定 → Play Console での Play App Signing 登録 → backup
+- [x] **release 用 signing config の有効化（local 作業）**
+  - `app/build.gradle.kts` が `AI_INBOX_RELEASE_*` プロパティを読み、揃っていれば `signingConfigs.release` を自動生成 → `buildTypes.release.signingConfig` に紐付ける
+  - keystore 生成・`~/.gradle/gradle.properties` への資格情報設定・別媒体への backup 完了
+  - `./gradlew :app:bundleRelease` で署名 AAB 出力 → `jarsigner -verify` で検証済み
   - 手順とバックアップ要件: [`docs/release-signing.md`](release-signing.md)
   - **keystore とパスワードはリポジトリに絶対コミットしない**（`.gitignore` で `*.jks` / `keystore.properties` 等を除外済み）
+  - 残: Play Console 側の Play App Signing 登録（後段 "Play Console 側の準備" を参照）
 
 ## Important
 
-- [ ] **アプリ名 `R.string.app_name` の確認**
-  - Play Store 上のリスティング名と齟齬がないかチェック
+- [x] **アプリ名 `R.string.app_name` の確認**
+  - `values/strings.xml` と `values-en/strings.xml` の双方で `"AI Inbox"` (8 文字、ランチャー表示・通知タイトル・推論 foreground service 通知で使用)
+  - Play Store のリスティング名も同じ `"AI Inbox"` に揃える方針
 
 - [ ] **モデル DL の Play ポリシー確認**
   - `ModelManager.kt`, `ModelDownloadWorker.kt` で Hugging Face から Gemma 重みを動的 DL
