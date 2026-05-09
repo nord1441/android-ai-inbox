@@ -7,7 +7,8 @@ title: AI Inbox
 端末内で完結する AI インボックス。共有メニューから取り込んだテキスト・スクリーンショットを、端末上で動作する小型 LLM と OCR が要約・分類・タグ付けします。**ユーザーデータが外部に送信されることはありません**。
 
 - 開発者: 福島啓皓 (Nobuaki Fukushima)
-- ライセンス: Apache License 2.0
+- アプリのリポジトリ / ソースコード: <https://github.com/nord1441/android-ai-inbox>
+- ライセンス: [Apache License 2.0](https://github.com/nord1441/android-ai-inbox/blob/main/LICENSE)
 - [プライバシーポリシー](privacy-policy.html)
 
 ## 設計目標

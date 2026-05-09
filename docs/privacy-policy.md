@@ -148,4 +148,5 @@ description: AI Inbox プライバシーポリシー
 ## 11. 開発元
 
 - 開発者: 福島啓皓 (Nobuaki Fukushima)
+- リポジトリ: <https://github.com/nord1441/android-ai-inbox>
 - ライセンス: Apache License 2.0
