@@ -79,20 +79,21 @@ Android 13 以上 / 推奨 RAM 8GB 以上 / 空き容量 1GB 以上
 
 ## Phone screenshots（最低 2 枚、Play 推奨は 4-8 枚）
 
-> 未作成。`art/screenshots/` 以下に配置予定。
+`art/screenshots/` に 4 枚配置済み（1260×2800、A024 / Android 16 実機キャプチャ）。サンプルデータはテックニュース 5 件（Python 3.13、KotlinConf 2026、Android 起動最適化、Apple MLX、DroidKaigi 2026）を share intent から流し込み、release ビルドで要約させたもの。
 
-撮影予定の画面（プライバシー訴求 → 機能 → UX の順）:
+| # | ファイル | 内容 | 訴求点 |
+|---|---|---|---|
+| 1 | `01-inbox.png` | Inbox 一覧（5 件要約済み） | 自動要約 + タグ + フィルタチップ（イベントあり / ニュース / #DroidKaigi） |
+| 2 | `02-detail.png` | KotlinConf 詳細画面 | 予定抽出（場所コペンハーゲン + 日時 + カレンダー追加 CTA）+ タグ + 場所フィールド |
+| 3 | `03-search.png` | "Android" 検索結果 | FTS5 横断検索（要約・OCR・タグ統合） |
+| 4 | `04-settings.png` | 設定画面 | モデル状態（GEMMA_4_E4B 3490 MB）+ DB 使用量 + FS Markdown 同期（最終同期時刻表示） |
 
-1. **Inbox 一覧**: 共有された複数アイテムが要約 + タグ付きで並んでいる状態
-2. **詳細画面**: 共有されたスクショから OCR + 要約 + 抽出された予定が表示されている状態
-3. **検索結果**: FTS5 で要約 / OCR 横断検索している状態
-4. **設定 + モデル状態**: 「機内モードでも動作」を訴求できる構成（モデル DL 完了状態）
-
-撮影方法 (adb):
+再撮影時の手順 (adb):
 
 ```bash
-adb shell screencap -p /sdcard/ai_inbox_screen.png
-adb pull /sdcard/ai_inbox_screen.png art/screenshots/01-inbox.png
+adb shell screencap -p /sdcard/screen.png
+adb pull /sdcard/screen.png art/screenshots/<NN>-<name>.png
+adb shell rm /sdcard/screen.png
 ```
 
 ---
