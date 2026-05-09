@@ -48,14 +48,15 @@
   - Play は同一 versionCode の AAB を弾くので release ごとに +1 必須
   - Git tag 連動 / 手動更新 / CI 自動化のどれにするか決める
 
-- [ ] **`kotlinx-coroutines-play-services` 依存の見直し**
-  - `app/build.gradle.kts:104`、Drive 連携破棄後に残っている可能性
-  - 利用箇所が無ければ削除して APK サイズ削減
+- [x] **`kotlinx-coroutines-play-services` 依存の見直し**
+  - 調査結果: 削除不可。ML Kit OCR が必須使用
+  - `MlKitOcrEngine.kt` で `Task<Text>.await()` (ML Kit の Play Services Task → suspend fun ブリッジ) として利用。`import kotlinx.coroutines.tasks.await` がそれ
+  - Drive 連携の名残ではなかった（チェックリスト作成時の推測誤り）
 
 ## Suggestion
 
-- [ ] `LICENSE` ファイルをリポジトリ直下に配置（SPDX ID 明示、推奨: Apache-2.0 / MIT / GPL-3.0）
-- [ ] `README.md` を拡充（機能、依存、ビルド手順、スクリーンショット）
+- [x] `LICENSE` ファイルをリポジトリ直下に配置（Apache-2.0、Copyright 2026 nord14541）
+- [x] `README.md` を拡充（概要、機能、プライバシー方針、ビルド手順、ドキュメント索引、ライセンス）。スクリーンショットは Play Store 提出用素材として別途用意
 - [ ] release ビルドで手動疎通スモーク（モデル DL → 共有 → 要約 → 削除 → FS 同期）
 - [ ] Adaptive icon の foreground にブランドマークを入れる（Play のアイコンガイドライン）
 
